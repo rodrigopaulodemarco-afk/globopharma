@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Globo Pharma OL</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Syne:wght@700;800&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --or:#E8440A;--or-d:#C4330A;--or-l:#FAECE7;
+  --bg:#F6F2EE;--wh:#fff;--bd:#EDE6DD;
+  --tx:#1A1208;--tx2:#7A6E64;
+  --r:10px;--rm:18px;--rl:26px;--rxl:34px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Nunito',sans-serif;color:var(--tx);background:var(--bg);-webkit-font-smoothing:antialiased;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px}
+.logo{text-align:center;margin-bottom:32px}
+.mark{width:160px;height:96px;border-radius:22px;margin:0 auto 12px;overflow:hidden;background:#FA4616}
+.mark img{width:100%;height:100%;object-fit:contain;display:block;padding:10px}
+.title{font-family:'Syne',sans-serif;font-size:24px;font-weight:800;color:var(--tx)}
+.sub{font-size:13px;color:var(--tx2);font-weight:600;margin-top:4px}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;width:100%;max-width:540px;margin-top:8px}
+.card{background:var(--wh);border:2px solid var(--bd);border-radius:var(--rxl);padding:28px 24px;text-align:center;text-decoration:none;color:var(--tx);transition:all .2s;box-shadow:0 4px 16px rgba(0,0,0,.06)}
+.card:hover{border-color:var(--or);transform:translateY(-2px);box-shadow:0 8px 28px rgba(232,68,10,.15)}
+.card-icon{font-size:36px;margin-bottom:12px}
+.card-title{font-family:'Syne',sans-serif;font-size:17px;font-weight:800;margin-bottom:4px}
+.card-desc{font-size:12.5px;color:var(--tx2);line-height:1.5}
+</style>
+</head>
+<body>
+<div class="logo">
+  <div class="mark">
+    <img src="assets/logo-globopharma.png" alt="Globo Pharma">
+  </div>
+  <div class="title">Globo Pharma OL</div>
+  <div class="sub">Selecione o portal desejado</div>
+</div>
+<div class="cards">
+  <a href="loja.html" class="card">
+    <div class="card-icon">🛒</div>
+    <div class="card-title">Loja</div>
+    <div class="card-desc">Portal de Pedidos</div>
+  </a>
+  <a href="admin.html" class="card">
+    <div class="card-icon">⚙️</div>
+    <div class="card-title">Administração</div>
+    <div class="card-desc">Painel administrativo</div>
+  </a>
+</div>
+</body>
+</html>

@@ -1,0 +1,2246 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Globo Pharma OL — Administração</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Syne:wght@700;800&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<style>
+:root{
+  --or:#E8440A;--or-d:#C4330A;--or-l:#FAECE7;
+  --bg:#F6F2EE;--wh:#fff;--bd:#EDE6DD;
+  --tx:#1A1208;--tx2:#7A6E64;--tx3:#B0A89E;
+  --gr:#1D9E75;--gr-l:#E6F7F2;--re:#E24B4A;--re-l:#FEECEC;
+  --pr:#F59E0B;--pr-d:#D97706;--pr-l:#FEF3C7;
+  --bl:#1565C0;--bl-l:#E3F2FD;
+  --r:10px;--rm:18px;--rl:26px;--rxl:34px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Nunito',sans-serif;color:var(--tx);background:var(--bg);-webkit-font-smoothing:antialiased}
+/* Login */
+#auth-screen{min-height:100vh;background:linear-gradient(145deg,#1F2937,#111827);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px}
+.auth-logo{text-align:center;margin-bottom:26px}
+.auth-mark{width:160px;height:96px;border-radius:22px;margin:0 auto 12px;overflow:hidden;box-shadow:0 8px 24px rgba(232,68,10,.35);background:#FA4616}
+.auth-mark img{width:100%;height:100%;object-fit:contain;display:block;padding:10px}
+.auth-name{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:#fff}
+.auth-sub{font-size:12.5px;color:rgba(255,255,255,.72);font-weight:600;margin-top:3px}
+.auth-card{background:#fff;border-radius:var(--rxl);padding:30px 26px;width:100%;max-width:380px;box-shadow:0 24px 60px rgba(0,0,0,.32)}
+.auth-title{font-family:'Syne',sans-serif;font-size:19px;font-weight:800;color:var(--tx);margin-bottom:4px}
+.auth-desc{font-size:12.5px;color:var(--tx2);margin-bottom:18px;line-height:1.5}
+.fg{margin-bottom:14px}
+.fl{display:block;font-size:11px;font-weight:800;color:var(--tx2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px}
+.fi{width:100%;border:2px solid var(--bd);border-radius:var(--rm);padding:13px 16px;font-family:'Nunito',sans-serif;font-size:14px;color:var(--tx);background:var(--bg);outline:none}
+.fi:focus{border-color:var(--or);background:#fff;box-shadow:0 0 0 4px var(--or-l)}
+.btn{border:none;border-radius:var(--rl);padding:13px 18px;font-family:'Nunito',sans-serif;font-weight:900;font-size:14px;cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;justify-content:center;gap:8px}
+.btn-or{background:var(--or);color:#fff;box-shadow:0 6px 20px rgba(232,68,10,.32)}
+.btn-or:hover{background:var(--or-d)}
+.btn-gr{background:var(--gr);color:#fff;box-shadow:0 6px 20px rgba(29,158,117,.28)}
+.btn-gr:hover{background:#178661}
+.btn-bl{background:var(--bl);color:#fff}
+.btn-bl:hover{background:#0d4d99}
+.btn-ghost{background:var(--bg);color:var(--tx2);border:1.5px solid var(--bd)}
+.btn-ghost:hover{background:var(--bd)}
+.btn-danger{background:var(--re);color:#fff}
+.btn-danger:hover{background:#bf3434}
+.row-del{border:1.5px solid var(--bd);background:#fff;color:var(--re);border-radius:8px;width:28px;height:28px;font-size:13px;cursor:pointer;line-height:1;display:inline-flex;align-items:center;justify-content:center;transition:.15s}
+.row-del:hover{background:var(--re-l);border-color:var(--re)}
+.fg-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 14px}
+.fg-grid .fg-full{grid-column:1/-1}
+.fg-grid .fi{padding:10px 12px;font-size:13px}
+.fg-check{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:800;color:var(--tx);margin-bottom:14px}
+@media(max-width:560px){.fg-grid{grid-template-columns:1fr}}
+.btn-full{width:100%}
+.alert{border-radius:var(--rm);padding:11px 14px;font-size:12.5px;font-weight:700;margin-bottom:14px;display:none;align-items:center;gap:8px}
+.alert.on{display:flex}
+.a-err{background:#FEE2E2;border:1.5px solid #FBBFBF;color:#B91C1C}
+.a-ok{background:var(--gr-l);border:1.5px solid #B2EEDA;color:var(--gr)}
+.a-info{background:var(--bl-l);border:1.5px solid #BBDEFB;color:var(--bl)}
+/* Admin shell */
+#admin-screen{display:none;min-height:100vh}
+.topbar{background:linear-gradient(135deg,#1F2937,#111827);padding:0 24px;height:64px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;box-shadow:0 4px 14px rgba(0,0,0,.2)}
+.brand{display:flex;align-items:center;gap:10px}
+.brand-mark{border-radius:12px;width:80px;height:46px;overflow:hidden;box-shadow:0 2px 8px rgba(232,68,10,.4);background:#FA4616}
+.brand-mark img{width:100%;height:100%;object-fit:contain;display:block;padding:5px}
+.brand-name{font-family:'Syne',sans-serif;font-weight:800;font-size:17px;color:#fff}
+.brand-sub{font-size:10px;color:rgba(255,255,255,.7);font-weight:600}
+.topbar-r{display:flex;align-items:center;gap:10px;color:#fff;font-size:12.5px}
+.btn-logout{background:rgba(255,255,255,.18);border:none;border-radius:50px;padding:7px 16px;color:#fff;font-family:'Nunito';font-weight:800;font-size:12px;cursor:pointer}
+.btn-logout:hover{background:rgba(255,255,255,.35)}
+.tabs-row{background:var(--wh);border-bottom:1px solid var(--bd);padding:0 24px;display:flex;gap:6px;overflow-x:auto;position:sticky;top:64px;z-index:40;scrollbar-width:none}
+.tabs-row::-webkit-scrollbar{display:none}
+.tabbtn{background:transparent;border:none;padding:14px 20px;font-family:'Nunito';font-size:13px;font-weight:800;color:var(--tx2);cursor:pointer;border-bottom:3px solid transparent;white-space:nowrap;display:inline-flex;align-items:center;gap:6px}
+.tabbtn:hover{color:var(--or)}
+.tabbtn.on{color:var(--or);border-bottom-color:var(--or)}
+.pad{padding:22px 24px;max-width:1400px;margin:0 auto}
+.pad-narrow{padding:22px 24px;max-width:980px;margin:0 auto}
+.tab{display:none}.tab.on{display:block}
+.section-title{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;margin-bottom:8px}
+.section-sub{color:var(--tx2);font-size:13px;margin-bottom:18px;line-height:1.6}
+.cards-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-bottom:22px}
+.kpi{background:var(--wh);border:.5px solid var(--bd);border-radius:var(--rm);padding:16px 18px}
+.kpi-lbl{font-size:11px;font-weight:800;color:var(--tx2);text-transform:uppercase;letter-spacing:.05em}
+.kpi-val{font-family:'Syne',sans-serif;font-size:26px;font-weight:800;color:var(--or);margin-top:4px}
+.kpi-val.gr{color:var(--gr)}.kpi-val.pr{color:var(--pr-d)}.kpi-val.bl{color:var(--bl)}
+.kpi-sub{font-size:11px;color:var(--tx2);font-weight:700;margin-top:3px}
+/* ---- lojas (CNPJs) sob uma mesma conta ---- */
+.lojas-bt{border:2px solid var(--bd);background:var(--wh);color:var(--tx2);border-radius:50px;padding:3px 10px;font-family:'Nunito',sans-serif;font-weight:800;font-size:11px;cursor:pointer;white-space:nowrap;transition:all .15s}
+.lojas-bt:hover{border-color:var(--or);color:var(--or)}
+.lojas-bt.multi{background:var(--or-l);border-color:var(--or-l);color:var(--or)}
+.lojas-bt.on{background:var(--or);border-color:var(--or);color:#fff}
+.lojas-ca{display:inline-block;transition:transform .15s;font-size:9px}
+.lojas-bt.on .lojas-ca{transform:rotate(180deg)}
+.lojas-tit{font-size:12px;font-weight:900;color:var(--tx);margin-bottom:9px}
+.lojas-tit span{font-weight:700;color:var(--tx2);font-size:11px;margin-left:6px}
+.lojas-box{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:8px}
+.loja-item{display:flex;align-items:center;gap:12px;background:var(--wh);border:2px solid var(--bd);border-radius:14px;padding:9px 12px}
+.loja-i{flex:1;min-width:0}
+.loja-nome{font-size:12.5px;font-weight:900;color:var(--tx);display:flex;align-items:center;gap:6px}
+.loja-tag{font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:.04em;background:var(--or-l);color:var(--or);padding:1px 6px;border-radius:50px}
+.loja-razao{font-size:11px;color:var(--tx2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.loja-cnpj{font-family:monospace;font-size:11.5px;font-weight:700;color:var(--tx);white-space:nowrap}
+.loja-assoc{font-size:10.5px;color:var(--tx2);white-space:nowrap;max-width:120px;overflow:hidden;text-overflow:ellipsis}
+.panel{background:var(--wh);border:.5px solid var(--bd);border-radius:var(--rl);padding:22px;margin-bottom:18px}
+.panel h3{font-family:'Syne',sans-serif;font-size:16px;font-weight:800;margin-bottom:6px;display:flex;align-items:center;gap:8px}
+.panel .desc{color:var(--tx2);font-size:13px;margin-bottom:14px;line-height:1.55}
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;align-items:center}
+.toolbar .search{flex:1;min-width:220px;position:relative}
+.toolbar .search input{width:100%;border:2px solid var(--bd);border-radius:50px;padding:10px 16px 10px 38px;font-family:'Nunito';font-size:13px;background:var(--bg);outline:none}
+.toolbar .search input:focus{border-color:var(--or);background:#fff}
+.toolbar .search::before{content:'🔍';position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:14px}
+/* Table */
+.tbl-wrap{overflow-x:auto;border:1px solid var(--bd);border-radius:var(--rm)}
+table.tbl{width:100%;border-collapse:collapse;font-size:12.5px;min-width:1100px}
+.tbl th{background:var(--bg);text-align:left;padding:10px 12px;font-weight:800;color:var(--tx2);text-transform:uppercase;letter-spacing:.04em;font-size:10.5px;border-bottom:1px solid var(--bd);position:sticky;top:0;z-index:2}
+.tbl td{padding:10px 12px;border-bottom:1px solid #f3eee6;vertical-align:middle}
+.tbl tr:hover td{background:var(--or-l)}
+.tbl tr.promo-row{background:linear-gradient(90deg,var(--pr-l),transparent 80%)}
+.tbl tr.promo-row:hover td{background:linear-gradient(90deg,#FED7AA,var(--or-l))}
+.tbl td.num{text-align:right;font-variant-numeric:tabular-nums}
+.tbl td.center{text-align:center}
+.tbl input.cell{width:90px;border:1.5px solid var(--bd);border-radius:8px;padding:5px 8px;font-family:'Nunito';font-size:12px;text-align:right;font-weight:700;background:#fff;outline:none}
+.tbl input.cell.full{width:100%;text-align:left}
+.tbl input.cell:focus{border-color:var(--or)}
+.tbl input[type=checkbox]{width:18px;height:18px;accent-color:var(--or);cursor:pointer}
+.tbl .cat-pill{display:inline-block;padding:2px 7px;border-radius:6px;font-size:9.5px;font-weight:800;text-transform:uppercase;background:var(--or-l);color:var(--or-d)}
+.tbl .cat-pill.similar{background:#E8F4FD;color:#1565C0}
+.tbl .cat-pill.outros{background:#F3E5F5;color:#7B1FA2}
+.tbl .promo-tag{background:linear-gradient(135deg,var(--pr),var(--pr-d));color:#fff;font-size:9.5px;font-weight:900;padding:2px 7px;border-radius:6px;text-transform:uppercase;letter-spacing:.05em}
+.tbl .stk-tag{font-size:9.5px;font-weight:800;padding:2px 7px;border-radius:6px}
+.tbl .stk-tag.in{background:var(--gr-l);color:var(--gr)}
+.tbl .stk-tag.out{background:#f0eae3;color:#aa6644}
+/* Upload */
+.upload-zone{border:2px dashed var(--bd);border-radius:var(--rl);padding:32px;text-align:center;cursor:pointer;transition:all .2s;background:var(--bg)}
+.upload-zone:hover, .upload-zone.drag{border-color:var(--or);background:var(--or-l)}
+.upload-ico{font-size:42px;margin-bottom:8px}
+.upload-msg{font-size:14px;font-weight:800;color:var(--tx);margin-bottom:4px}
+.upload-sub{font-size:12px;color:var(--tx2)}
+.upload-zone input[type=file]{display:none}
+.format-box{background:var(--bl-l);border-left:3px solid var(--bl);border-radius:var(--rm);padding:14px 16px;font-size:12.5px;color:var(--tx);line-height:1.7;margin-top:14px}
+.format-box b{color:var(--bl)}
+.format-box code{background:#fff;padding:1px 5px;border-radius:4px;font-family:'Courier New',monospace;font-size:11.5px;color:var(--or-d)}
+.preview-box{background:var(--gr-l);border-left:3px solid var(--gr);border-radius:var(--rm);padding:14px 16px;font-size:13px;color:var(--tx);margin-top:14px}
+.preview-box b{color:var(--gr)}
+.modal-ov{position:fixed;inset:0;background:rgba(0,0,0,.52);z-index:300;display:none;align-items:center;justify-content:center;padding:24px}
+.modal-ov.on{display:flex}
+.modal{background:var(--wh);border-radius:var(--rxl);width:100%;max-width:560px;max-height:90vh;overflow-y:auto;padding:26px}
+.modal h3{font-family:'Syne',sans-serif;font-size:18px;margin-bottom:10px}
+.modal p{font-size:13px;color:var(--tx2);line-height:1.6;margin-bottom:14px}
+.actions{display:flex;gap:10px;justify-content:flex-end;margin-top:14px;flex-wrap:wrap}
+.help{font-size:11.5px;color:var(--tx2);font-style:italic;margin-top:6px}
+.empty-tbl{padding:30px;text-align:center;color:var(--tx2)}
+.log-filters{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.log-filters select{border:1.5px solid var(--bd);border-radius:8px;padding:6px 10px;font-family:'Nunito';font-size:12px;background:#fff;outline:none}
+.formula-box{background:var(--or-l);border-left:3px solid var(--or);border-radius:var(--rm);padding:14px 16px;font-size:12.5px;line-height:1.8;margin-bottom:14px}
+.formula-box code{background:#fff;padding:1px 6px;border-radius:4px;font-family:'Courier New',monospace;color:var(--or-d);font-size:11.5px}
+/* Imagens */
+.img-cell{position:relative;width:54px;height:54px;border-radius:10px;background:var(--bg);border:1.5px dashed var(--bd);display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;transition:all .18s}
+.img-cell:hover{border-color:var(--or);background:var(--or-l)}
+.img-cell.has-img{border-style:solid;border-color:var(--bd)}
+.img-cell img{width:100%;height:100%;object-fit:contain;display:block}
+.img-cell .add-ico{font-size:22px;color:var(--tx3)}
+.img-cell .rm-btn{position:absolute;top:-6px;right:-6px;width:20px;height:20px;background:var(--re);color:#fff;border:2px solid #fff;border-radius:50%;display:none;align-items:center;justify-content:center;font-size:11px;cursor:pointer;font-weight:800;z-index:2}
+.img-cell.has-img:hover .rm-btn{display:flex}
+.img-cell input[type=file]{display:none}
+.bulk-img-zone{border:2px dashed var(--bd);border-radius:var(--rl);padding:22px;text-align:center;cursor:pointer;transition:all .2s;background:var(--bg);margin-top:6px}
+.bulk-img-zone:hover, .bulk-img-zone.drag{border-color:var(--bl);background:var(--bl-l)}
+.bulk-img-zone .ico{font-size:36px;margin-bottom:6px}
+.img-storage-bar{background:var(--bg);border-radius:50px;height:8px;overflow:hidden;margin-top:8px;border:1px solid var(--bd)}
+.img-storage-fill{height:100%;background:linear-gradient(90deg,var(--gr),#2BC492);transition:width .4s}
+.img-storage-fill.warn{background:linear-gradient(90deg,var(--pr),var(--pr-d))}
+.img-storage-fill.danger{background:linear-gradient(90deg,var(--re),#bf3434)}
+</style>
+</head>
+<body>
+
+<!-- ===== LOGIN ===== -->
+<div id="auth-screen">
+  <div class="auth-logo">
+    <div class="auth-mark"><img src="assets/logo-globopharma.png" alt="Globo Pharma"></div>
+    <div class="auth-name">Globo Pharma OL</div>
+    <div class="auth-sub">Painel Administrativo · Pedidos de OL</div>
+  </div>
+  <div class="auth-card">
+    <div class="auth-title">🔐 Acesso restrito</div>
+    <div class="auth-desc">Informe a senha de administração para gerenciar produtos.</div>
+    <div class="alert a-err" id="adm-err"><span>Senha incorreta</span></div>
+    <div class="fg">
+      <label class="fl">Senha</label>
+      <input class="fi" id="adm-pw" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()" autocomplete="current-password"/>
+    </div>
+    <button class="btn btn-or btn-full" onclick="doLogin()">Entrar →</button>
+    <button class="btn btn-ghost btn-full" style="margin-top:10px" onclick="window.location.href='loja.html'">← Voltar para a loja</button>
+  </div>
+</div>
+
+<!-- ===== ADMIN ===== -->
+<div id="admin-screen">
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-mark"><img src="assets/logo-globopharma.png" alt="Globo Pharma"></div>
+      <div><div class="brand-name">Globo Pharma OL · Admin</div><div class="brand-sub">Portal do Distribuidor</div></div>
+    </div>
+    <div class="topbar-r">
+      <a href="loja.html" style="color:#fff;text-decoration:none;font-weight:700;font-size:12.5px">🛒 Abrir Loja</a>
+      <button class="btn-logout" onclick="doLogout()">Sair</button>
+    </div>
+  </header>
+
+  <nav class="tabs-row">
+    <button class="tabbtn on" data-tab="dashboard" onclick="goTab('dashboard')">📊 Dashboard</button>
+    <button class="tabbtn" data-tab="pedidos" onclick="goTab('pedidos')">📋 Pedidos</button>
+    <button class="tabbtn" data-tab="produtos" onclick="goTab('produtos')">📦 Produtos</button>
+    <button class="tabbtn" data-tab="upload" onclick="goTab('upload')">📤 Upload Excel</button>
+    <button class="tabbtn" data-tab="acessos" onclick="goTab('acessos')">👥 Log de Acessos</button>
+    <button class="tabbtn" data-tab="lgpd" onclick="goTab('lgpd')">🔒 LGPD</button>
+    <button class="tabbtn" data-tab="clientes" onclick="goTab('clientes')">🏢 Clientes</button>
+    <button class="tabbtn" data-tab="contas" onclick="goTab('contas')">🔐 Contas de Acesso</button>
+    <button class="tabbtn" data-tab="config" onclick="goTab('config')">⚙️ Configurações</button>
+  </nav>
+
+  <!-- DASHBOARD -->
+  <section class="tab on" id="tab-dashboard">
+    <div class="pad">
+      <div class="section-title">Dashboard</div>
+      <div class="section-sub">Visão geral do catálogo e acessos.</div>
+      <div class="cards-grid">
+        <div class="kpi"><div class="kpi-lbl">Produtos cadastrados</div><div class="kpi-val" id="k-prod">0</div><div class="kpi-sub" id="k-prod-sub">—</div></div>
+        <div class="kpi"><div class="kpi-lbl">Em estoque</div><div class="kpi-val gr" id="k-stk">0</div><div class="kpi-sub">de <span id="k-stk-tot">0</span> produtos</div></div>
+        <div class="kpi"><div class="kpi-lbl">Em promoção</div><div class="kpi-val pr" id="k-prm">0</div><div class="kpi-sub">destacados na loja</div></div>
+        <div class="kpi"><div class="kpi-lbl">Pedidos recebidos</div><div class="kpi-val" id="k-ped">0</div><div class="kpi-sub" id="k-ped-sub">— hoje</div></div>
+        <div class="kpi"><div class="kpi-lbl">Acessos (30 dias)</div><div class="kpi-val bl" id="k-acc">0</div><div class="kpi-sub" id="k-acc-uniq">— únicos</div></div>
+        <div class="kpi"><div class="kpi-lbl">Contas de acesso</div><div class="kpi-val" id="k-cta">0</div><div class="kpi-sub" id="k-cta-sub">— ativas</div></div>
+      </div>
+      <div class="panel">
+        <h3>🚀 Atalhos</h3>
+        <div class="actions" style="justify-content:flex-start">
+          <button class="btn btn-or" onclick="goTab('pedidos')">📋 Ver Pedidos</button>
+          <button class="btn btn-bl" onclick="goTab('produtos')">📦 Produtos</button>
+          <button class="btn btn-bl" onclick="goTab('upload')">📤 Upload Excel</button>
+          <button class="btn btn-gr" onclick="goTab('acessos')">👥 Acessos</button>
+          <button class="btn btn-ghost" onclick="goTab('clientes')">🏢 Clientes</button>
+          <button class="btn btn-ghost" onclick="goTab('contas')">🔐 Contas</button>
+          <button class="btn btn-ghost" onclick="downloadTemplate()">📥 Template</button>
+        </div>
+      </div>
+      <div class="panel">
+        <h3>📋 Como funciona</h3>
+        <div class="formula-box">
+          <b>📐 Fórmulas oficiais de preço:</b><br>
+          <code>Preço Líquido = PF × (1 − Desconto%)</code><br>
+          <code>Com PMPF: ST = (PMPF − Preço Líquido) × 0,17</code><br>
+          <code>Sem PMPF: ST = Preço Líquido × 0,656 × 0,17</code><br>
+          <code>Preço Final = Preço Líquido + ST</code>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PEDIDOS -->
+  <section class="tab" id="tab-pedidos">
+    <div class="pad">
+      <div class="section-title">📋 Pedidos recebidos</div>
+      <div class="section-sub">Todos os pedidos enviados pela loja. O envio para email é automático — aqui você consulta, baixa e re-exporta.</div>
+      <div class="cards-grid">
+        <div class="kpi"><div class="kpi-lbl">Pedidos totais</div><div class="kpi-val" id="kp-tot">0</div></div>
+        <div class="kpi"><div class="kpi-lbl">Hoje</div><div class="kpi-val gr" id="kp-hoje">0</div></div>
+        <div class="kpi"><div class="kpi-lbl">Últimos 7 dias</div><div class="kpi-val pr" id="kp-7d">0</div></div>
+        <div class="kpi"><div class="kpi-lbl">Valor total (30d)</div><div class="kpi-val bl" id="kp-val">R$ 0</div></div>
+      </div>
+      <div class="panel">
+        <div class="toolbar">
+          <div class="search"><input id="ped-search" placeholder="Buscar por nº, cliente, CNPJ, comprador..." oninput="renderPedidos()"/></div>
+          <select id="ped-filter" onchange="renderPedidos()" style="border:1.5px solid var(--bd);border-radius:50px;padding:8px 14px;font-family:'Nunito';font-weight:700;background:#fff;font-size:12px">
+            <option value="">Todos os pedidos</option>
+            <option value="hoje">Hoje</option>
+            <option value="7">Últimos 7 dias</option>
+            <option value="30">Últimos 30 dias</option>
+            <option value="ok">Email enviado</option>
+            <option value="fail">Email pendente</option>
+          </select>
+          <button class="btn btn-bl" onclick="exportarTodosPedidos()">📥 Exportar todos (Excel)</button>
+        </div>
+        <div class="tbl-wrap" style="max-height:70vh">
+          <table class="tbl">
+            <thead><tr>
+              <th>Nº</th><th>Data</th><th>Cliente (Fantasia)</th><th>CNPJ</th><th>Comprador</th><th>Distribuidora</th><th class="num">Itens</th><th class="num">Total</th><th class="center">Email</th><th class="center">Ações</th>
+            </tr></thead>
+            <tbody id="ped-tbody"><tr><td colspan="10" class="empty-tbl">Nenhum pedido recebido ainda</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <!-- Modal detalhe -->
+    <div class="modal-ov" id="ped-detail-ov">
+      <div class="modal" style="max-width:780px">
+        <div class="modal-hdr"><div class="modal-title" id="pd-title">Pedido</div><button class="modal-close" onclick="closePedDetail()">✕</button></div>
+        <div id="pd-body"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRODUTOS -->
+  <section class="tab" id="tab-produtos">
+    <div class="pad">
+      <div class="section-title">📦 Produtos</div>
+      <div class="section-sub">Edite Desconto, Promoção e Estoque por produto, inclua novos itens ou exclua os que saíram de linha. As alterações se aplicam imediatamente à Loja.</div>
+      <div class="panel">
+        <div class="toolbar">
+          <div class="search"><input id="prod-search" placeholder="Buscar por nome, EAN ou código..." oninput="renderTable()"/></div>
+          <select id="prod-filter" onchange="renderTable()" style="border:1.5px solid var(--bd);border-radius:50px;padding:8px 14px;font-family:'Nunito';font-weight:700;background:#fff;font-size:12px">
+            <option value="">Todos</option>
+            <option value="promo">🔥 Em promoção</option>
+            <option value="stock">✓ Em estoque</option>
+            <option value="nostock">○ Sem estoque</option>
+            <option value="nocad">⚠ Sem cadastro Pharmalog</option>
+          </select>
+          <button class="btn btn-or" onclick="abrirNovoProduto()">➕ Novo produto</button>
+          <button class="btn btn-gr" onclick="salvarProdutos()">💾 Salvar alterações</button>
+          <button class="btn btn-bl" onclick="exportarExcel()">📥 Exportar Excel</button>
+          <button class="btn btn-ghost" onclick="resetProdutos()">↺ Restaurar padrão</button>
+        </div>
+        <div class="alert a-ok" id="prod-saved">✓ Alterações salvas com sucesso. A loja já exibe os novos valores.</div>
+        <div style="background:var(--bl-l);border-left:3px solid var(--bl);border-radius:var(--rm);padding:12px 14px;margin-bottom:12px;font-size:12.5px;line-height:1.6">
+          <b style="color:var(--bl)">🖼️ Imagens dos produtos:</b> Clique na célula "Foto" de qualquer linha para enviar uma imagem (JPG/PNG). Ela é redimensionada para 320×320 e salva automaticamente. <button class="btn btn-bl" style="padding:5px 12px;font-size:11px;margin-left:8px" onclick="document.getElementById('bulk-img-panel').style.display=document.getElementById('bulk-img-panel').style.display==='none'?'block':'none'">📦 Upload em lote</button>
+          <div id="bulk-img-panel" style="display:none;margin-top:10px">
+            <div style="font-size:11.5px;color:var(--tx2);margin-bottom:6px">Envie várias imagens de uma vez. O sistema casa cada arquivo com um produto pelo <b>EAN</b> no nome do arquivo (ex.: <code>7899620912731.jpg</code>) ou pelo <b>código SAP</b> (ex.: <code>PAA39A.png</code>).</div>
+            <label class="bulk-img-zone" id="bulkZone">
+              <div class="ico">📥</div>
+              <div style="font-weight:800;font-size:13px">Solte as imagens aqui ou clique</div>
+              <div style="font-size:11px;color:var(--tx2);margin-top:3px">JPG, PNG, WebP — múltiplos arquivos</div>
+              <input type="file" id="bulkImgs" accept="image/*" multiple style="display:none" onchange="bulkImgUpload(this.files)"/>
+            </label>
+            <div id="bulk-result" style="margin-top:8px;font-size:12px"></div>
+          </div>
+          <div style="font-size:11px;color:var(--tx2);margin-top:8px">Espaço de imagens usado: <b id="img-storage-txt">0 KB</b></div>
+          <div class="img-storage-bar"><div class="img-storage-fill" id="img-storage-fill" style="width:0%"></div></div>
+        </div>
+        <div class="tbl-wrap" style="max-height:70vh">
+          <table class="tbl">
+            <thead><tr>
+              <th class="center">Foto</th><th>EAN</th><th>Produto</th><th>Cat.</th><th class="num">PF</th><th class="num">PMC</th><th class="num">PMPF</th>
+              <th>Desc %</th><th class="num">Preço Líq.</th><th class="num">ST</th><th class="num">Final</th>
+              <th class="center">Estoque</th><th class="center">🔥 Promo</th><th>Mensagem</th><th>Sabor</th><th>Açúcar</th><th class="center">Excluir</th>
+            </tr></thead>
+            <tbody id="prod-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- UPLOAD -->
+  <section class="tab" id="tab-upload">
+    <div class="pad-narrow">
+      <div class="section-title">📤 Carregar Excel</div>
+      <div class="section-sub">Faça upload de uma planilha .xlsx para atualizar todos os produtos de uma vez.</div>
+      <div class="panel">
+        <h3>📋 Formato esperado</h3>
+        <div class="format-box">
+          A planilha deve ter as seguintes colunas (a ordem pode variar — as colunas são reconhecidas pelo nome do cabeçalho):<br><br>
+          <b>Obrigatórias:</b><br>
+          • <code>EAN</code> — código de barras (identifica o produto)<br>
+          • <code>PF</code> ou <code>PF 17%</code> — Preço de Fábrica<br>
+          • <code>Desconto</code> — pode ser 0,65 ou 65 ou 65%<br><br>
+          <b>Opcionais:</b><br>
+          • <code>PMC</code> ou <code>PMC 17%</code> — Preço Máximo ao Consumidor<br>
+          • <code>PMPF</code> — Preço Médio Ponderado Final (usado no cálculo do ST)<br>
+          • <code>Promoção</code> ou <code>Promocao</code> — Sim/Não, true/false, 1/0<br>
+          • <code>Estoque</code> ou <code>ESTOQUE</code> — Sim/Não<br>
+          • <code>Descrição</code> / <code>Produto</code> — para novos produtos<br>
+          • <code>Codigo Interno Pharmalog</code> / <code>Codigo</code> — código de referência<br>
+          • <code>Caixa Padrão</code> — quantidade por caixa<br>
+          • <code>Mensagem</code> / <code>Diferencial</code> — texto de destaque visível ao cliente na loja<br>
+          • <code>Sabor</code> — sabor do produto (ex: Framboesa, Pêssego, Morango)<br>
+          • <code>Açúcar</code> — Sim/Não — indica se o produto contém açúcar<br><br>
+          <i>Preço Líquido, ST e Preço Final são calculados automaticamente pelas fórmulas oficiais.</i><br><br>
+          <b>Produtos descontinuados:</b> depois de ler a planilha, o sistema lista os produtos do catálogo que não aparecem nela e oferece a opção de removê-los — assim eles somem da loja junto com a atualização de preços.
+        </div>
+        <div class="formula-box" style="margin-top:14px">
+          <b>📐 Fórmulas usadas:</b><br>
+          <code>Preço Líquido = PF × (1 − Desconto)</code><br>
+          <code>ST com PMPF: (PMPF − Preço Líquido) × 0,17</code><br>
+          <code>ST sem PMPF: Preço Líquido × 0,656 × 0,17</code><br>
+          <code>Preço Final = Preço Líquido + ST</code>
+        </div>
+        <div class="actions" style="margin:14px 0">
+          <button class="btn btn-ghost" onclick="downloadTemplate()">📥 Baixar template .xlsx</button>
+        </div>
+        <label class="upload-zone" id="upZone" for="upFile">
+          <div class="upload-ico">📥</div>
+          <div class="upload-msg">Arraste a planilha aqui ou clique para selecionar</div>
+          <div class="upload-sub">Aceita .xlsx, .xls, .csv</div>
+          <input type="file" id="upFile" accept=".xlsx,.xls,.csv" onchange="handleUpload(this.files[0])"/>
+        </label>
+        <div class="alert a-err" id="up-err"><span id="up-err-msg"></span></div>
+        <div id="up-result"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ACESSOS -->
+  <section class="tab" id="tab-acessos">
+    <div class="pad">
+      <div class="section-title">👥 Log de acessos à loja</div>
+      <div class="section-sub">Histórico dos clientes que acessaram a loja nos últimos 30 dias. Acessos mais antigos são removidos automaticamente.</div>
+      <div class="cards-grid">
+        <div class="kpi"><div class="kpi-lbl">Acessos totais (30d)</div><div class="kpi-val bl" id="a-tot">0</div></div>
+        <div class="kpi"><div class="kpi-lbl">Clientes únicos</div><div class="kpi-val gr" id="a-uniq">0</div></div>
+        <div class="kpi"><div class="kpi-lbl">Acessos hoje</div><div class="kpi-val" id="a-hoje">0</div></div>
+        <div class="kpi"><div class="kpi-lbl">Últimos 7 dias</div><div class="kpi-val pr" id="a-7d">0</div></div>
+      </div>
+      <div class="panel">
+        <div class="log-filters">
+          <select id="log-dist" onchange="renderAcessos()">
+            <option value="">Todas distribuidoras</option>
+          </select>
+          <select id="log-periodo" onchange="renderAcessos()">
+            <option value="30">Últimos 30 dias</option>
+            <option value="7">Últimos 7 dias</option>
+            <option value="1">Hoje</option>
+          </select>
+          <div class="search" style="min-width:240px;position:relative"><input id="log-search" placeholder="Buscar CNPJ, nome, comprador, telefone..." oninput="renderAcessos()" style="width:100%;border:2px solid var(--bd);border-radius:50px;padding:8px 14px 8px 36px;font-family:'Nunito';font-size:12.5px;background:var(--bg);outline:none"/></div>
+          <button class="btn btn-bl" onclick="exportAcessos()">📥 Exportar Excel</button>
+          <button class="btn btn-danger" onclick="limparAcessos()">🗑️ Limpar log</button>
+        </div>
+        <div class="tbl-wrap">
+          <table class="tbl">
+            <thead><tr>
+              <th>Data/Hora</th><th>Distribuidora</th><th>CNPJ</th><th>Nome Fantasia</th><th>Comprador</th><th>Telefone</th><th>Email</th>
+            </tr></thead>
+            <tbody id="log-tbody"><tr><td colspan="7" class="empty-tbl">Nenhum acesso registrado ainda</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CLIENTES -->
+  <section class="tab" id="tab-clientes">
+    <div class="pad">
+      <div class="section-title">🏢 Cadastro de Clientes</div>
+      <div class="section-sub">Base de clientes registrados automaticamente a partir dos pedidos. Consulte histórico de compras, exporte dados em Excel.</div>
+      <div class="cards-grid">
+        <div class="kpi"><div class="kpi-lbl">Clientes cadastrados</div><div class="kpi-val" id="kc-tot">0</div></div>
+        <div class="kpi"><div class="kpi-lbl">Total em pedidos</div><div class="kpi-val gr" id="kc-val">R$ 0</div></div>
+        <div class="kpi"><div class="kpi-lbl">Total pedidos</div><div class="kpi-val pr" id="kc-peds">0</div></div>
+      </div>
+      <div class="panel">
+        <div class="toolbar">
+          <div class="search"><input id="cli-search" placeholder="Buscar por nome, CNPJ, comprador, email..." oninput="renderClientes()"/></div>
+          <button class="btn btn-gr" onclick="syncClientes()">🔄 Sincronizar com pedidos</button>
+          <button class="btn btn-bl" onclick="exportarClientesExcel()">📥 Exportar Excel</button>
+        </div>
+        <div class="tbl-wrap" style="max-height:70vh">
+          <table class="tbl">
+            <thead><tr>
+              <th>Razão Social</th><th>Nome Fantasia</th><th>CNPJ</th><th>Comprador</th><th>CPF</th><th>Nascimento</th><th>Telefone</th><th>Email</th><th>Associativismo</th><th class="num">Pedidos</th><th class="num">Valor Total</th><th>Último Pedido</th><th class="center">Ações</th>
+            </tr></thead>
+            <tbody id="cli-tbody"><tr><td colspan="13" class="empty-tbl">Nenhum cliente cadastrado ainda. Clique em "Sincronizar com pedidos" para importar.</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <!-- Modal histórico -->
+    <div class="modal-ov" id="cli-hist-ov">
+      <div class="modal" style="max-width:860px">
+        <h3 id="cli-hist-title">Histórico de Compras</h3>
+        <p id="cli-hist-sub"></p>
+        <div id="cli-hist-body"></div>
+        <div class="actions">
+          <button class="btn btn-bl" id="btn-export-hist" onclick="exportarHistoricoExcel()">📥 Exportar Histórico</button>
+          <button class="btn btn-ghost" onclick="closeCliHist()">Fechar</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTAS DE ACESSO -->
+  <section class="tab" id="tab-contas">
+    <div class="pad">
+      <div class="section-title">🔐 Contas de Acesso à Loja</div>
+      <div class="section-sub">Contas criadas pelos clientes no cadastro da loja. Aqui você confere os dados informados, valida e-mail e celular, bloqueia acessos e redefine senhas.</div>
+      <div class="cards-grid">
+        <div class="kpi"><div class="kpi-lbl">Contas cadastradas</div><div class="kpi-val" id="ku-tot">0</div></div>
+        <div class="kpi"><div class="kpi-lbl">Ativas</div><div class="kpi-val gr" id="ku-ativas">0</div></div>
+        <div class="kpi"><div class="kpi-lbl">Bloqueadas</div><div class="kpi-val pr" id="ku-bloq">0</div></div>
+        <div class="kpi"><div class="kpi-lbl">Pendentes de validação</div><div class="kpi-val bl" id="ku-pend">0</div></div>
+        <div class="kpi"><div class="kpi-lbl">Lojas vinculadas</div><div class="kpi-val" id="ku-lojas">0</div><div class="kpi-sub" id="ku-multi">0 contas com mais de uma</div></div>
+      </div>
+      <div class="panel">
+        <div class="toolbar">
+          <div class="search"><input id="usr-search" placeholder="Buscar por nome, CNPJ (de qualquer loja), CPF, e-mail, celular..." oninput="renderUsuarios()"/></div>
+          <select id="usr-filtro" onchange="renderUsuarios()" style="border:2px solid var(--bd);border-radius:50px;padding:8px 14px;font-family:'Nunito';font-size:12.5px;background:var(--bg);outline:none">
+            <option value="">Todas as contas</option>
+            <option value="ativo">Somente ativas</option>
+            <option value="bloqueado">Somente bloqueadas</option>
+            <option value="pendente">Pendentes de validação</option>
+          </select>
+          <button class="btn btn-bl" onclick="exportarUsuariosExcel()">📥 Exportar Excel</button>
+          <button class="btn btn-ghost" onclick="loadUsuariosFromServer().then(renderUsuarios)">🔄 Atualizar</button>
+        </div>
+        <div class="tbl-wrap" style="max-height:70vh">
+          <table class="tbl">
+            <thead><tr>
+              <th>Cadastro</th><th>Nome</th><th>CPF</th><th>Nascimento</th><th>E-mail</th><th>Celular</th>
+              <th class="center">Lojas</th>
+              <th>CNPJ</th><th>Razão Social</th><th>Nome Fantasia</th><th>Associativismo</th><th>Distribuidora</th>
+              <th class="center">Validação</th><th class="center">Aceites</th><th class="center">Status</th>
+              <th class="num">Acessos</th><th>Último acesso</th><th class="center">Ações</th>
+            </tr></thead>
+            <tbody id="usr-tbody"><tr><td colspan="18" class="empty-tbl">Nenhuma conta criada ainda</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal redefinir senha -->
+    <div class="modal-ov" id="usr-pw-ov">
+      <div class="modal" style="max-width:420px">
+        <h3>Redefinir senha</h3>
+        <p id="usr-pw-sub"></p>
+        <div class="fg-small" style="margin-top:14px">
+          <label>Nova senha <span class="req">*</span></label>
+          <input id="usr-pw-input" type="text" placeholder="Entre 6 e 10 caracteres, com número e símbolo"/>
+        </div>
+        <p style="font-size:11.5px;color:var(--tx3);margin-top:8px">Regras: 6 a 10 caracteres, ao menos 1 número e 1 caractere especial. Informe a nova senha ao cliente por um canal seguro.</p>
+        <div class="actions">
+          <button class="btn btn-or" onclick="salvarNovaSenhaUsuario()">Salvar senha</button>
+          <button class="btn btn-ghost" onclick="fecharModalSenha()">Cancelar</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- LGPD -->
+  <section class="tab" id="tab-lgpd">
+    <div class="pad">
+      <div class="section-title">🔒 Consentimentos LGPD</div>
+      <div class="section-sub">Historico de aceites dos Termos de Uso e Politica de Privacidade pelos clientes. Registros armazenados para conformidade com a LGPD (Lei 13.709/2018).</div>
+      <div class="cards-grid">
+        <div class="kpi"><div class="kpi-lbl">Total de consentimentos</div><div class="kpi-val" id="lgpd-tot">0</div></div>
+        <div class="kpi"><div class="kpi-lbl">Hoje</div><div class="kpi-val gr" id="lgpd-hoje">0</div></div>
+        <div class="kpi"><div class="kpi-lbl">Ultimos 7 dias</div><div class="kpi-val pr" id="lgpd-7d">0</div></div>
+        <div class="kpi"><div class="kpi-lbl">CNPJs unicos</div><div class="kpi-val bl" id="lgpd-uniq">0</div></div>
+      </div>
+      <div class="panel">
+        <div class="log-filters">
+          <select id="lgpd-periodo" onchange="renderConsentimentos()">
+            <option value="">Todos</option>
+            <option value="30">Ultimos 30 dias</option>
+            <option value="7">Ultimos 7 dias</option>
+            <option value="1">Hoje</option>
+          </select>
+          <div class="search" style="min-width:240px;position:relative"><input id="lgpd-search" placeholder="Buscar CNPJ, nome, comprador, email..." oninput="renderConsentimentos()" style="width:100%;border:2px solid var(--bd);border-radius:50px;padding:8px 14px 8px 36px;font-family:'Nunito';font-size:12.5px;background:var(--bg);outline:none"/></div>
+          <button class="btn btn-bl" onclick="exportConsentimentos()">📥 Exportar Excel</button>
+        </div>
+        <div class="tbl-wrap" style="max-height:70vh">
+          <table class="tbl">
+            <thead><tr>
+              <th>Data/Hora</th><th>CNPJ</th><th>Razao Social</th><th>Nome Fantasia</th><th>Comprador</th><th>Email</th><th>Telefone</th><th>Versao</th><th class="center">Aceite</th>
+            </tr></thead>
+            <tbody id="lgpd-tbody"><tr><td colspan="9" class="empty-tbl">Nenhum consentimento registrado ainda</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONFIG -->
+  <section class="tab" id="tab-config">
+    <div class="pad-narrow">
+      <div class="section-title">⚙️ Configurações</div>
+      <div class="section-sub">Senha, pedido mínimo e dados de sistema.</div>
+      <div class="panel">
+        <h3>🛒 Pedido Mínimo da Loja</h3>
+        <div class="desc">Define o valor mínimo (em reais, no Preço Líquido sem ST) que o cliente precisa atingir para finalizar um pedido. Atualmente aplicado na loja. Altere e salve para que o novo valor passe a valer imediatamente.</div>
+        <div class="fg"><label class="fl">Valor mínimo (R$)</label><input class="fi" id="cfg-pedido-min" type="number" step="0.01" min="0" placeholder="1000"/></div>
+        <button class="btn btn-or" onclick="alterarPedidoMinimo()">Salvar pedido mínimo</button>
+        <div class="alert a-ok" id="cfg-min-ok" style="margin-top:14px"><span>✓ Pedido mínimo atualizado!</span></div>
+      </div>
+      <div class="panel">
+        <h3>🔐 Senha do Admin</h3>
+        <div class="desc">A senha de acesso ao painel administrativo está armazenada no navegador. Padrão: <code>globo@admin2026</code>.</div>
+        <div class="fg"><label class="fl">Nova senha</label><input class="fi" id="cfg-pw" type="password" placeholder="Mínimo 6 caracteres"/></div>
+        <div class="fg"><label class="fl">Confirmar nova senha</label><input class="fi" id="cfg-pw2" type="password"/></div>
+        <button class="btn btn-or" onclick="alterarSenha()">Atualizar senha</button>
+      </div>
+      <div class="panel">
+        <h3>📧 Email de destino dos pedidos</h3>
+        <div class="desc">Quando um cliente finaliza um pedido na loja, uma notificação é registrada automaticamente via Netlify Forms. Para receber as notificações por email, configure em: <b>Netlify Dashboard → Project configuration → Notifications → Form submission notifications</b> (selecione o formulário "pedido" e adicione o email desejado). Este campo abaixo é salvo como referência nos pedidos.</div>
+        <div class="fg"><label class="fl">Email destinatário</label><input class="fi" id="cfg-email" type="email" placeholder="rodrigo.demarco@globopharma.com.br"/></div>
+        <button class="btn btn-or" onclick="alterarEmail()">Salvar email</button>
+        <div class="alert a-ok" id="cfg-email-ok" style="margin-top:14px"><span>✓ Email salvo!</span></div>
+      </div>
+      <div class="panel">
+        <h3>🗑️ Resetar dados</h3>
+        <div class="desc">Remove todas as customizações de produtos do navegador, voltando à carga inicial.</div>
+        <div class="actions" style="justify-content:flex-start">
+          <button class="btn btn-danger" onclick="resetProdutos()">Restaurar produtos</button>
+          <button class="btn btn-danger" onclick="resetPedidos()">Apagar pedidos</button>
+          <button class="btn btn-danger" onclick="limparAcessos()">Limpar acessos</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<!-- Modal novo produto -->
+<div class="modal-ov" id="prodModal">
+  <div class="modal">
+    <h3>➕ Novo produto</h3>
+    <p>O EAN identifica o produto no catálogo, nas fotos e nas planilhas. Preço Líquido, ST e Preço Final são calculados automaticamente.</p>
+    <div class="alert a-err" id="np-err"><span id="np-err-msg"></span></div>
+    <div class="fg-grid">
+      <div class="fg fg-full"><label class="fl">Descrição do produto *</label><input class="fi" id="np-nome" type="text" placeholder="Ex: DIPIRONA 500 MG 20 COMP"/></div>
+      <div class="fg"><label class="fl">EAN *</label><input class="fi" id="np-ean" type="text" inputmode="numeric" placeholder="7899620912731"/></div>
+      <div class="fg"><label class="fl">Código Pharmalog</label><input class="fi" id="np-cod" type="text" placeholder="Opcional"/></div>
+      <div class="fg"><label class="fl">Categoria</label>
+        <select class="fi" id="np-cat">
+          <option value="Genérico">Genérico</option>
+          <option value="Similar">Similar</option>
+          <option value="Outros">Outros</option>
+        </select>
+      </div>
+      <div class="fg"><label class="fl">Grupo / linha</label><input class="fi" id="np-grupo" type="text" placeholder="Ex: Dor/Febre"/></div>
+      <div class="fg"><label class="fl">Ícone</label>
+        <select class="fi" id="np-icon">
+          <option value="💊">💊 Comprimido</option>
+          <option value="🧴">🧴 Frasco</option>
+          <option value="🧼">🧼 Sabonete</option>
+          <option value="👃">👃 Nasal</option>
+          <option value="👁️">👁️ Oftálmico</option>
+          <option value="🦷">🦷 Bucal</option>
+        </select>
+      </div>
+      <div class="fg"><label class="fl">Caixa padrão</label><input class="fi" id="np-cx" type="number" min="0" step="1" placeholder="0"/></div>
+      <div class="fg"><label class="fl">PF 17% (R$) *</label><input class="fi" id="np-pf" type="number" min="0" step="0.01" placeholder="0,00"/></div>
+      <div class="fg"><label class="fl">PMC 17% (R$)</label><input class="fi" id="np-pmc" type="number" min="0" step="0.01" placeholder="0,00"/></div>
+      <div class="fg"><label class="fl">PMPF (R$)</label><input class="fi" id="np-pmpf" type="number" min="0" step="0.01" placeholder="0,00"/></div>
+      <div class="fg"><label class="fl">Desconto (%)</label><input class="fi" id="np-desc" type="number" min="0" max="100" step="0.01" placeholder="0"/></div>
+      <div class="fg fg-full"><label class="fl">Mensagem de destaque na loja</label><input class="fi" id="np-msg" type="text" placeholder="Ex: Maior desconto do mercado"/></div>
+      <div class="fg"><label class="fl">Sabor</label><input class="fi" id="np-sabor" type="text" placeholder="Ex: Framboesa"/></div>
+      <div class="fg"><label class="fl">Contém açúcar</label>
+        <select class="fi" id="np-acucar">
+          <option value="">—</option>
+          <option value="Sim">Sim</option>
+          <option value="Não">Não</option>
+        </select>
+      </div>
+    </div>
+    <label class="fg-check"><input type="checkbox" id="np-estoque"/> Disponível em estoque</label>
+    <label class="fg-check"><input type="checkbox" id="np-promo"/> 🔥 Em promoção</label>
+    <div class="actions">
+      <button class="btn btn-ghost" onclick="fecharNovoProduto()">Cancelar</button>
+      <button class="btn btn-gr" onclick="salvarNovoProduto()">Adicionar ao catálogo</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal confirmação upload -->
+<div class="modal-ov" id="confirmModal">
+  <div class="modal">
+    <h3>Confirmar atualização</h3>
+    <div id="confirmContent"></div>
+    <div class="actions">
+      <button class="btn btn-ghost" onclick="closeConfirm()">Cancelar</button>
+      <button class="btn btn-or" onclick="aplicarUpload()">Aplicar ao catálogo</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const CATALOGO_VERSAO = '2026-08-22';
+const PRODUTOS_BAKED = [{"id":"PAA39A","ean":"7899620912731","cod":"","nome":"ACEBROFILINA XPE ADULTO 50 MG/5 ML 120 ML","cat":"Genérico","grupo":"Tosse/Expectorante","icon":"🧴","cx":60,"pmc":30.88,"pf":22.4,"pmpf":28.6,"descPct":71.3682,"precoLiq":6.4135,"st":3.7717,"final":10.1852,"estoque":false,"cad":true,"promo":false,"mensagem":"","sabor":"Framboesa","acucar":"Não"},{"id":"PAA40A","ean":"7899620912748","cod":"","nome":"ACEBROFILINA XPE INFANTIL 25 MG/5 ML 120 ML","cat":"Genérico","grupo":"Tosse/Expectorante","icon":"🧴","cx":60,"pmc":25.97,"pf":18.84,"pmpf":21.79,"descPct":68.532,"precoLiq":5.9286,"st":2.6964,"final":8.625,"estoque":false,"cad":true,"promo":false,"mensagem":"","sabor":"Framboesa","acucar":"Não"},{"id":"PAA90B","ean":"7899620915091","cod":"328448","nome":"APETISINA  240 ML (VITAMINA B1,B2,B6,C e Fe)","cat":"Outros","grupo":"Outros","icon":"💊","cx":30,"pmc":0,"pf":23.78,"pmpf":0,"descPct":79.2498,"precoLiq":4.9344,"st":0.5503,"final":5.4847,"estoque":false,"cad":true,"promo":false,"mensagem":"","sabor":"Morango","acucar":"Não"},{"id":"PAA90A","ean":"7899620910584","cod":"328464","nome":"APETISINA 240 ML  (VITAMINA B1,B2,B6,C e Fe)","cat":"Outros","grupo":"Outros","icon":"💊","cx":30,"pmc":0,"pf":23.78,"pmpf":0,"descPct":79.2498,"precoLiq":4.9344,"st":0.5503,"final":5.4847,"estoque":false,"cad":true,"promo":false,"mensagem":"","sabor":"Uva","acucar":"Não"},{"id":"PAA81A","ean":"7899620916388","cod":"354198","nome":"ARIPIPRAZOL 10 MG  30 COMP","cat":"Genérico","grupo":"Psiquiátrico","icon":"💊","cx":48,"pmc":210.47,"pf":152.69,"pmpf":96.91,"descPct":78.5615,"precoLiq":32.7344,"st":10.9099,"final":43.6443,"estoque":false,"cad":true,"promo":false,"mensagem":"","sabor":"","acucar":""},{"id":"PAA82A","ean":"7899620916418","cod":"354201","nome":"ARIPIPRAZOL 15 MG 30 COMP","cat":"Genérico","grupo":"Psiquiátrico","icon":"💊","cx":42,"pmc":360.8,"pf":261.75,"pmpf":142.08,"descPct":82.8575,"precoLiq":44.8705,"st":16.5256,"final":61.3961,"estoque":true,"cad":true,"promo":true,"mensagem":"","sabor":"","acucar":""},{"id":"PAA03A","ean":"7898060132501","cod":"328898","nome":"AZITROMICINA 500 MG 3 COMP","cat":"Genérico","grupo":"Antibióticos","icon":"💊","cx":200,"pmc":22,"pf":15.96,"pmpf":21.9,"descPct":75.5396,"precoLiq":3.9039,"st":3.0593,"final":6.9632,"estoque":false,"cad":true,"promo":false,"mensagem":"","sabor":"","acucar":""},{"id":"PAA03B","ean":"7898060132518","cod":"328901","nome":"AZITROMICINA 500 MG 5 COMP","cat":"Genérico","grupo":"Antibióticos","icon":"💊","cx":200,"pmc":36.83,"pf":26.72,"pmpf":31.41,"descPct":79.8541,"precoLiq":5.383,"st":4.4246,"final":9.8076,"estoque":false,"cad":true,"promo":false,"mensagem":"","sabor":"","acucar":""},{"id":"PAA44A","ean":"7898060131184","cod":"","nome":"BENZIN SABONETE 100 MG 60G","cat":"Similar","grupo":"Similar","icon":"🧼","cx":162,"pmc":0,"pf":18.41,"pmpf":0,"descPct":70.4312,"precoLiq":5.4436,"st":0.6071,"final":6.0507,"estoque":false,"cad":true,"promo":false,"mensagem":"","sabor":"","acucar":""},{"id":"PAA07B","ean":"7898060138060","cod":"","nome":"CAPTOCORD 25MG 30 COMP (CAPTOPRIL)","cat":"Similar","grupo":"Cardiovascular","icon":"💊","cx":200,"pmc":14.54,"pf":10.55,"pmpf":5.48,"descPct":79.0849,"precoLiq":2.2065,"st":0.5565,"final":2.763,"estoque":false,"cad":true,"promo":false,"mensagem":"","sabor":"","acucar":""},{"id":"PAA08B","ean":"7898060138084","cod":"","nome":"CAPTOCORD 50MG 30 COMP (CAPTOPRIL)","cat":"Similar","grupo":"Cardiovascular","icon":"💊","cx":200,"pmc":25.91,"pf":18.8,"pmpf":16.18,"descPct":80.2665,"precoLiq":3.7099,"st":2.1199,"final":5.8298,"estoque":false,"cad":true,"promo":false,"mensagem":"","sabor":"","acucar":""},{"id":"PAA07A","ean":"7899620910133","cod":"329177","nome":"CAPTOPRIL 25 MG 30 COMP","cat":"Genérico","grupo":"Cardiovascular","icon":"💊","cx":200,"pmc":13.62,"pf":9.88,"pmpf":3.95,"descPct":77.6666,"precoLiq":2.2065,"st":0.2964,"final":2.5029,"estoque":true,"cad":true,"promo":true,"mensagem":"","sabor":"","acucar":""},{"id":"PAA08A","ean":"7899620910164","cod":"329193","nome":"CAPTOPRIL 50 MG 30 COMP","cat":"Genérico","grupo":"Cardiovascular","icon":"💊","cx":200,"pmc":25.91,"pf":18.8,"pmpf":14.72,"descPct":80.2665,"precoLiq":3.7099,"st":1.8717,"final":5.5816,"estoque":false,"cad":true,"promo":false,"mensagem":"","sabor":"","acucar":""},{"id":"PAA11A","ean":"7899620911352","cod":"","nome":"CETOCONAZOL 200MG 10 COMP","cat":"Genérico","grupo":"Antifúngicos","icon":"💊","cx":200,"pmc":37.45,"pf":27.17,"pmpf":20.51,"descPct":84.2768,"precoLiq":4.272,"st":2.7605,"final":7.0325,"estoque":false,"cad":true,"promo":false,"mensagem":"","sabor":"","acucar":""},{"id":"PAA11B","ean":"7899620911376","cod":"","nome":"CETOCONAZOL 200MG 30 COMP","cat":"Genérico","grupo":"Antifúngicos","icon":"💊","cx":200,"pmc":90.27,"pf":65.49,"pmpf":42.66,"descPct":82.3088,"precoLiq":11.586,"st":5.2826,"final":16.8686,"estoque":false,"cad":true,"promo":false,"mensagem":"","sabor":"","acucar":""},{"id":"PAB06A","ean":"7899620913707","cod":"328618","nome":"CETOCONAZOL SHAMPOO 100 ML","cat":"Genérico","grupo":"Antifúngicos","icon":"🧴","cx":48,"pmc":0,"pf":29.73,"pmpf":0,"descPct":70.924,"precoLiq":8.6443,"st":0.964,"final":9.6083,"estoque":false,"cad":true,"promo":false,"mensagem":"","sabor":"","acucar":""},{"id":"PAA11C","ean":"7898060139869","cod":"","nome":"CETOMICOSS 200MG 10 COMP (CETOCONAZOL)","cat":"Similar","grupo":"Antifúngicos","icon":"💊","cx":200,"pmc":37.45,"pf":27.17,"pmpf":0,"descPct":84.2768,"precoLiq":4.272,"st":0.4764,"final":4.7484,"estoque":false,"cad":true,"promo":false,"mensagem":"","sabor":"","acucar":""},{"id":"PAA11D","ean":"7898060139883","cod":"","nome":"CETOMICOSS 200MG 30 COMP (CETOCONAZOL)","cat":"Similar","grupo":"Antifúngicos","icon":"💊","cx":200,"pmc":91.03,"pf":66.04,"pmpf":0,"descPct":82.4561,"precoLiq":11.586,"st":1.2921,"final":12.8781,"estoque":false,"cad":true,"promo":false,"mensagem":"","sabor":"","acucar":""},{"id":"PAA21A","ean":"7899620915312","cod":"329851","nome":"CIPROFIBRATO 100 MG 30 COMP","cat":"Genérico","grupo":"Antibióticos","icon":"💊","cx":200,"pmc":64.88,"pf":47.07,"pmpf":31.39,"descPct":76.0038,"precoLiq":11.295,"st":3.4162,"final":14.7112,"estoque":false,"cad":true,"promo":false,"mensagem":"","sabor":"","acucar":""},{"id":"PAA04B","ean":"7899620910058","cod":"328960","nome":"CIPROFLOXATRIN 500MG 14 COMP (CIPROFLOXACINO)","cat":"Similar","grupo":"Antibióticos","icon":"💊","cx":200,"pmc":48.92,"pf":35.49,"pmpf":0,"descPct":83.5684,"precoLiq":5.8316,"st":0.6503,"final":6.4819,"estoque":false,"cad":true,"promo":false,"mensagem":"","sabor":"","acucar":""},{"id":"PAA37A","ean":"7899620913004","cod":"328995","nome":"CLOR AMBROXOL ADULTO XPE 30 MG/5 ML 120 ML+COPO","cat":"Genérico","grupo":"Tosse/Expectorante","icon":"🧴","cx":60,"pmc":28.3,"pf":21.1,"pmpf":22.97,"descPct":74.2009,"precoLiq":5.4436,"st":2.9795,"final":8.4231,"estoque":false,"cad":true,"promo":false,"mensagem":"","sabor":"Pêssego","acucar":"Não"},{"id":"PAA38A","ean":"7899620912991","cod":"328987","nome":"CLOR AMBROXOL INFANTIL XPE 15 MG/5 ML 120 ML+COPO","cat":"Genérico","grupo":"Tosse/Expectorante","icon":"🧴","cx":60,"pmc":22.64,"pf":16.88,"pmpf":18.22,"descPct":68.613,"precoLiq":5.2981,"st":2.1967,"final":7.4948,"estoque":false,"cad":true,"promo":false,"mensagem":"","sabor":"Framboesa","acucar":"Não"},{"id":"PAA45A","ean":"7898060131504","cod":"329002","nome":"CLOR BROMEXINA XPE ADULTO 120 ML","cat":"Genérico","grupo":"Tosse/Expectorante","icon":"🧴","cx":60,"pmc":29.24,"pf":21.8,"pmpf":22.8,"descPct":72.2486,"precoLiq":6.0498,"st":2.8475,"final":8.8973,"estoque":false,"cad":true,"promo":false,"mensagem":"","sabor":"Cacau e Cereja","acucar":"Não"},{"id":"PAA46A","ean":"7898060131146","cod":"329010","nome":"CLOR BROMEXINA XPE INFANTIL 120 ML","cat":"Genérico","grupo":"Tosse/Expectorante","icon":"🧴","cx":60,"pmc":21.79,"pf":16.24,"pmpf":19.95,"descPct":62.7475,"precoLiq":6.0498,"st":2.363,"final":8.4128,"estoque":false,"cad":true,"promo":false,"mensagem":"","sabor":"Morango","acucar":"Não"},{"id":"PAA24B","ean":"7898060139920","cod":"328847","nome":"CLOR CICLOBENZAPRIINA 5 MG 30 COMP","cat":"Genérico","grupo":"Relaxante muscular","icon":"💊","cx":200,"pmc":25.65,"pf":19.12,"pmpf":17.45,"descPct":85.9231,"precoLiq":2.6915,"st":2.5089,"final":5.2004,"estoque":false,"cad":true,"promo":false,"mensagem":"","sabor":"","acucar":""},{"id":"PAA25A","ean":"7898060139944","cod":"328855","nome":"CLOR CICLOBENZAPRINA 10 MG 15 COMP","cat":"Genérico","grupo":"Relaxante muscular","icon":"💊","cx":200,"pmc":17.69,"pf":13.19,"pmpf":14.17,"descPct":77.1127,"precoLiq":3.0188,"st":1.8957,"final":4.9145,"estoque":false,"cad":true,"promo":false,"mensagem":"","sabor":"","acucar":""},{"id":"PAA25B","ean":"7898060139951","cod":"328863","nome":"CLOR CICLOBENZAPRINA 10 MG 30 COMP","cat":"Genérico","grupo":"Relaxante muscular","icon":"💊","cx":200,"pmc":29.67,"pf":22.12,"pmpf":23.54,"descPct":78.8984,"precoLiq":4.6677,"st":3.2083,"final":7.876,"estoque":false,"cad":true,"promo":false,"mensagem":"","sabor":"","acucar":""},{"id":"PAA24A","ean":"7898060139913","cod":"328839","nome":"CLOR CICLOBENZAPRINA 5 MG 15 COMP","cat":"Genérico","grupo":"Relaxante muscular","icon":"💊","cx":200,"pmc":15.8,"pf":11.78,"pmpf":12.14,"descPct":81.2687,"precoLiq":2.2065,"st":1.6887,"final":3.8952,"estoque":false,"cad":true,"promo":false,"mensagem":"","sabor":"","acucar":""},{"id":"PAA04A","ean":"7898060131399","cod":"328952","nome":"CLOR CIPROFLOXACINO 500MG 14 COMP","cat":"Genérico","grupo":"Antibióticos","icon":"💊","cx":200,"pmc":47.84,"pf":34.71,"pmpf":31.42,"descPct":83.1992,"precoLiq":5.8316,"st":4.35,"final":10.1816,"estoque":false,"cad":true,"promo":false,"mensagem":"","sabor":"","acucar":""},{"id":"PAA12A","ean":"7898060134529","cod":"328510","nome":"CLOR FLUOXETINA 20 MG 30 COMP","cat":"Genérico","grupo":"Psiquiátrico","icon":"💊","cx":98,"pmc":45.8,"pf":33.23,"pmpf":27.73,"descPct":87.3033,"precoLiq":4.2191,"st":3.9969,"final":8.216,"estoque":false,"cad":true,"promo":false,"mensagem":"","sabor":"","acucar":""},{"id":"PAA36A","ean":"7899620910744","cod":"328502","nome":"CLOR HIDROXIZINA SOL ORAL 100 ML+COPO","cat":"Genérico","grupo":"Antialérgico","icon":"🧴","cx":60,"pmc":32.72,"pf":24.39,"pmpf":23.01,"descPct":79.6693,"precoLiq":4.9587,"st":3.0687,"final":8.0274,"estoque":true,"cad":true,"promo":false,"mensagem":"","sabor":"Cereja","acucar":"Sim"},{"id":"PAA05A","ean":"7898060132600","cod":"328936","nome":"CLOR LOPERAMIDA 2 MG 12 COMP","cat":"Genérico","grupo":"Gastrointestinal","icon":"💊","cx":200,"pmc":6.96,"pf":5.19,"pmpf":6.55,"descPct":64.7264,"precoLiq":1.8307,"st":0.8023,"final":2.633,"estoque":false,"cad":true,"promo":false,"mensagem":"","sabor":"","acucar":""},{"id":"PAA76A","ean":"7899620916654","cod":"374571","nome":"CLOR PIOGLITAZONA 30 MG 15 COMP","cat":"Genérico","grupo":"Diabetes","icon":"💊","cx":100,"pmc":46.62,"pf":33.82,"pmpf":0,"descPct":57.0213,"precoLiq":14.5354,"st":1.621,"final":16.1564,"estoque":false,"cad":true,"promo":false,"mensagem":"","sabor":"","acucar":""},{"id":"PAA76B","ean":"7899620916661","cod":"374547","nome":"CLOR PIOGLITAZONA 30 MG 30 COMP","cat":"Genérico","grupo":"Diabetes","icon":"💊","cx":80,"pmc":93.23,"pf":67.64,"pmpf":49.16,"descPct":58.9571,"precoLiq":27.7614,"st":3.6378,"final":31.3992,"estoque":false,"cad":true,"promo":false,"mensagem":"","sabor":"","acucar":""},{"id":"PAA76C","ean":"7899620917408","cod":"374580","nome":"CLOR PIOGLITAZONA 30 MG 60 COMP","cat":"Genérico","grupo":"Diabetes","icon":"💊","cx":96,"pmc":184.39,"pf":133.77,"pmpf":68.23,"descPct":58.474,"precoLiq":55.5493,"st":2.1557,"final":57.705,"estoque":false,"cad":true,"promo":false,"mensagem":"","sabor":"","acucar":""},{"id":"PAA16A","ean":"7899620911987","cod":"","nome":"CLOR PROPRANOLOL 40 MG 40 COMP","cat":"Genérico","grupo":"Cardiovascular","icon":"💊","cx":200,"pmc":10.05,"pf":7.29,"pmpf":5.68,"descPct":53.9327,"precoLiq":3.3583,"st":0.3947,"final":3.753,"estoque":false,"cad":true,"promo":false,"mensagem":"","sabor":"","acucar":""},{"id":"PAA19A","ean":"7899620911284","cod":"329304","nome":"CLOR SERTRALINA 100 MG 30 COMP","cat":"Genérico","grupo":"Psiquiátrico","icon":"💊","cx":200,"pmc":113.86,"pf":82.6,"pmpf":52.74,"descPct":84.7564,"precoLiq":12.5912,"st":6.8253,"final":19.4165,"estoque":false,"cad":true,"promo":false,"mensagem":"","sabor":"","acucar":""},{"id":"PAA20A","ean":"7899620911277","cod":"328979","nome":"CLOR SERTRALINA 50 MG 30 COMP","cat":"Genérico","grupo":"Psiquiátrico","icon":"💊","cx":200,"pmc":53.84,"pf":39.06,"pmpf":25.96,"descPct":84.915,"precoLiq":5.8922,"st":3.4115,"final":9.3037,"estoque":true,"cad":true,"promo":true,"mensagem":"","sabor":"","acucar":""},{"id":"PAA80A","ean":"7899620916616","cod":"354180","nome":"CLOR TRAZODONA 100 MG 30 COMP","cat":"Genérico","grupo":"Psiquiátrico","icon":"💊","cx":60,"pmc":79.64,"pf":57.78,"pmpf":49.05,"descPct":70.2655,"precoLiq":17.1806,"st":5.4178,"final":22.5984,"estoque":false,"cad":true,"promo":false,"mensagem":"","sabor":"","acucar":""},{"id":"PAA79A","ean":"7899620916548","cod":"354171","nome":"CLOR TRAZODONA 50 MG 60 COMP","cat":"Genérico","grupo":"Psiquiátrico","icon":"💊","cx":54,"pmc":79.64,"pf":57.78,"pmpf":47.79,"descPct":68.1825,"precoLiq":18.3842,"st":4.999,"final":23.3832,"estoque":false,"cad":true,"promo":false,"mensagem":"","sabor":"","acucar":""},{"id":"PAA77A","ean":"7899620916715","cod":"354147","nome":"CLOR VENLAFAXINA 75 MG 30 CAPS","cat":"Genérico","grupo":"Psiquiátrico","icon":"💊","cx":168,"pmc":106.14,"pf":77,"pmpf":59.31,"descPct":80.264,"precoLiq":15.1967,"st":7.4993,"final":22.696,"estoque":false,"cad":true,"promo":false,"mensagem":"","sabor":"","acucar":""},{"id":"PAB04A","ean":"7899620913226","cod":"","nome":"CURADRIM SOLUCAO AQUOSA 60 ML","cat":"Outros","grupo":"Outros","icon":"💊","cx":100,"pmc":0,"pf":17.36,"pmpf":0,"descPct":67.8746,"precoLiq":5.577,"st":0.6219,"final":6.1989,"estoque":false,"cad":true,"promo":false,"mensagem":"","sabor":"","acucar":""},{"id":"PAB41B","ean":"7899620915176","cod":"","nome":"DESLORATADINA 5 MG 10 COMP","cat":"Genérico","grupo":"Alergia","icon":"💊","cx":200,"pmc":56.33,"pf":41.99,"pmpf":27.36,"descPct":88.3641,"precoLiq":4.8859,"st":3.8206,"final":8.7065,"estoque":false,"cad":true,"promo":false,"mensagem":"","sabor":"","acucar":""},{"id":"PAB41A","ean":"7899620915183","cod":"","nome":"DESLORATADINA 5 MG 30 COMP","cat":"Genérico","grupo":"Alergia","icon":"💊","cx":200,"pmc":87.45,"pf":65.19,"pmpf":41.23,"descPct":79.7657,"precoLiq":13.1907,"st":4.7667,"final":17.9574,"estoque":false,"cad":true,"promo":false,"mensagem":"","sabor":"","acucar":""},{"id":"PAB42B","ean":"7899620914971","cod":"","nome":"DESLORATADINA XPE 0,5 MG/ML 100 ML","cat":"Genérico","grupo":"Alergia","icon":"🧴","cx":60,"pmc":62.51,"pf":46.6,"pmpf":34.13,"descPct":86.2371,"precoLiq":6.4135,"st":4.7118,"final":11.1253,"estoque":false,"cad":true,"promo":false,"mensagem":"","sabor":"Pêssego","acucar":"Sim"},{"id":"PAB42A","ean":"7899620914964","cod":"","nome":"DESLORATADINA XPE 0,5 MG/ML 60 ML","cat":"Genérico","grupo":"Alergia","icon":"🧴","cx":60,"pmc":44.21,"pf":32.96,"pmpf":28.93,"descPct":84.2199,"precoLiq":5.2011,"st":4.0339,"final":9.235,"estoque":false,"cad":true,"promo":false,"mensagem":"","sabor":"Pêssego","acucar":"Sim"},{"id":"PAB49A","ean":"7899620918023","cod":"374539","nome":"DICLORIDRATO LEVOCETIRIZINA 5 MG 10 COMP","cat":"Genérico","grupo":"Alergia","icon":"💊","cx":90,"pmc":48.63,"pf":36.25,"pmpf":31.74,"descPct":73.2774,"precoLiq":9.6869,"st":3.749,"final":13.4359,"estoque":false,"cad":true,"promo":false,"mensagem":"","sabor":"","acucar":""},{"id":"PAB28A","ean":"7899620915633","cod":"364363","nome":"DIPIRONA 1 G 10 COMP","cat":"Genérico","grupo":"Dor/Febre","icon":"💊","cx":200,"pmc":24.62,"pf":18.35,"pmpf":14.66,"descPct":77.9326,"precoLiq":4.0494,"st":1.8038,"final":5.8532,"estoque":false,"cad":true,"promo":false,"mensagem":"","sabor":"","acucar":""},{"id":"PAB27A","ean":"7899620915688","cod":"364355","nome":"DIPIRONA 500 MG 30 COMP","cat":"Genérico","grupo":"Dor/Febre","icon":"💊","cx":98,"pmc":33.85,"pf":25.23,"pmpf":19.57,"descPct":74.772,"precoLiq":6.365,"st":2.2449,"final":8.6099,"estoque":false,"cad":true,"promo":false,"mensagem":"","sabor":"","acucar":""},{"id":"PAA18D","ean":"7899620910195","cod":"329150","nome":"FLAMAPE 20 MG 10 COMP (PREDNISONA)","cat":"Similar","grupo":"Anti-inflamatório","icon":"💊","cx":200,"pmc":16,"pf":11.61,"pmpf":0,"descPct":68.5678,"precoLiq":3.6493,"st":0.407,"final":4.0563,"estoque":false,"cad":true,"promo":false,"mensagem":"","sabor":"","acucar":""},{"id":"PAA18C","ean":"7899620910201","cod":"329169","nome":"FLAMAPE 20 MG 20 COMP (PREDNISONA)","cat":"Similar","grupo":"Anti-inflamatório","icon":"💊","cx":200,"pmc":30.24,"pf":21.94,"pmpf":21.53,"descPct":71.2652,"precoLiq":6.3044,"st":2.5884,"final":8.8928,"estoque":false,"cad":true,"promo":false,"mensagem":"","sabor":"","acucar":""},{"id":"PAA15H","ean":"7899620911895","cod":"","nome":"FLUCOLCID 150 MG 02 CAPS (FLUCONAZOL)","cat":"Similar","grupo":"Antifúngicos","icon":"💊","cx":200,"pmc":20.4,"pf":14.8,"pmpf":13.07,"descPct":89.023,"precoLiq":1.6246,"st":1.9457,"final":3.5703,"estoque":false,"cad":true,"promo":false,"mensagem":"","sabor":"","acucar":""},{"id":"PAA15G","ean":"7899620911888","cod":"","nome":"FLUCOLCID 150 MG 1 CAPS (FLUCONAZOL)","cat":"Similar","grupo":"Antifúngicos","icon":"💊","cx":200,"pmc":14.27,"pf":10.35,"pmpf":0,"descPct":90.2775,"precoLiq":1.0063,"st":0.1122,"final":1.1185,"estoque":false,"cad":true,"promo":false,"mensagem":"","sabor":"","acucar":""},{"id":"PAA15E","ean":"7899620911963","cod":"374555","nome":"FLUCONAZOL 150 MG 1 CAPS","cat":"Genérico","grupo":"Antifúngicos","icon":"💊","cx":200,"pmc":13.54,"pf":9.82,"pmpf":6.01,"descPct":89.7527,"precoLiq":1.0063,"st":0.8506,"final":1.8569,"estoque":false,"cad":true,"promo":false,"mensagem":"","sabor":"","acucar":""},{"id":"PAA15F","ean":"7899620911956","cod":"374520","nome":"FLUCONAZOL 150 MG 2 CAPS","cat":"Genérico","grupo":"Antifúngicos","icon":"💊","cx":200,"pmc":19.75,"pf":14.33,"pmpf":10.95,"descPct":88.663,"precoLiq":1.6246,"st":1.5853,"final":3.2099,"estoque":false,"cad":true,"promo":false,"mensagem":"","sabor":"","acucar":""},{"id":"PAA28A","ean":"7899620911826","cod":"329312","nome":"GLICENIX ADULTO SUPOS 2,30 G 6 UNIDS (GLICEROL)","cat":"Similar","grupo":"Gastrointestinal","icon":"💊","cx":162,"pmc":0,"pf":17.35,"pmpf":0,"descPct":68.6247,"precoLiq":5.4436,"st":0.6071,"final":6.0507,"estoque":false,"cad":true,"promo":false,"mensagem":"","sabor":"","acucar":""},{"id":"PAA30A","ean":"7899620911840","cod":"329355","nome":"GLICENIX LACTENTE SUPOS 0,92 G 6 UNIDS (GLICEROL)","cat":"Similar","grupo":"Gastrointestinal","icon":"💊","cx":162,"pmc":0,"pf":17.35,"pmpf":0,"descPct":68.6247,"precoLiq":5.4436,"st":0.6071,"final":6.0507,"estoque":false,"cad":true,"promo":false,"mensagem":"","sabor":"","acucar":""},{"id":"PAA29A","ean":"7899620911833","cod":"329339","nome":"GLICENIX PEDIATRICO SUPOS 1,40 G 6 UNIDS (GLICEROL)","cat":"Similar","grupo":"Gastrointestinal","icon":"💊","cx":120,"pmc":0,"pf":17.35,"pmpf":0,"descPct":68.6247,"precoLiq":5.4436,"st":0.6071,"final":6.0507,"estoque":false,"cad":true,"promo":false,"mensagem":"","sabor":"","acucar":""},{"id":"PAA83A","ean":"7899620915886","cod":"354210","nome":"GLOBOFLU 30 MG 10 CAPS (OSELTAMIVIR)","cat":"Similar","grupo":"Antiviral","icon":"💊","cx":96,"pmc":106.67,"pf":77.39,"pmpf":90.48,"descPct":31.5542,"precoLiq":52.9702,"st":6.3767,"final":59.3469,"estoque":false,"cad":true,"promo":false,"mensagem":"","sabor":"","acucar":""},{"id":"PAA84A","ean":"7899620915909","cod":"354228","nome":"GLOBOFLU 45 MG 10 CAPS (OSELTAMIVIR)","cat":"Similar","grupo":"Antiviral","icon":"💊","cx":96,"pmc":172.81,"pf":125.37,"pmpf":144.68,"descPct":38.2954,"precoLiq":77.3591,"st":11.4446,"final":88.8037,"estoque":false,"cad":true,"promo":false,"mensagem":"","sabor":"","acucar":""},{"id":"PAA85A","ean":"7899620915923","cod":"354236","nome":"GLOBOFLU 75 MG 10 CAPS (OSELTAMIVIR)","cat":"Similar","grupo":"Antiviral","icon":"💊","cx":96,"pmc":316.23,"pf":229.42,"pmpf":183.37,"descPct":44.7023,"precoLiq":126.864,"st":9.606,"final":136.47,"estoque":false,"cad":true,"promo":false,"mensagem":"","sabor":"","acucar":""},{"id":"PAA36B","ean":"7899620911307","cod":"328723","nome":"HOXIDRIN SOL ORAL 100 ML+COPO (HIDROXIZINA)","cat":"Similar","grupo":"Antialérgico","icon":"🧴","cx":60,"pmc":32.72,"pf":24.39,"pmpf":0,"descPct":76.3886,"precoLiq":5.7588,"st":0.6422,"final":6.401,"estoque":false,"cad":true,"promo":false,"mensagem":"","sabor":"Framboesa","acucar":"Sim"},{"id":"PAA27A","ean":"7899620915756","cod":"337285","nome":"IBUPROFENO 600 MG 10 CAPS GEL","cat":"Genérico","grupo":"Dor/Febre","icon":"💊","cx":98,"pmc":30.34,"pf":22.01,"pmpf":18.5,"descPct":63.3145,"precoLiq":8.0745,"st":1.7723,"final":9.8468,"estoque":false,"cad":true,"promo":true,"mensagem":"","sabor":"","acucar":""},{"id":"PAA05B","ean":"7898060132297","cod":"329371","nome":"INTESTIN 2 MG 12 COMP (LOPERAMIDA)","cat":"Similar","grupo":"Gastrointestinal","icon":"💊","cx":200,"pmc":10.13,"pf":7.55,"pmpf":7.74,"descPct":75.7523,"precoLiq":1.8307,"st":1.0046,"final":2.8353,"estoque":false,"cad":true,"promo":false,"mensagem":"","sabor":"","acucar":""},{"id":"PAB05A","ean":"7899620913202","cod":"328758","nome":"KALOSTOP SOLUCAO 10 ML (ACIDO SALICILICO)","cat":"Similar","grupo":"Similar","icon":"💊","cx":150,"pmc":0,"pf":24.31,"pmpf":0,"descPct":67.1843,"precoLiq":7.9775,"st":0.8897,"final":8.8672,"estoque":false,"cad":true,"promo":false,"mensagem":"","sabor":"","acucar":""},{"id":"PAA48B","ean":"7898060133904","cod":"328774","nome":"LERGIDRIN 0,4 MG/ML+0,05 MG/ML XPE 120 ML (DEXC+BETA)","cat":"Similar","grupo":"Alergia","icon":"🧴","cx":60,"pmc":24.41,"pf":18.2,"pmpf":21.44,"descPct":72.7546,"precoLiq":4.9587,"st":2.8018,"final":7.7605,"estoque":false,"cad":true,"promo":false,"mensagem":"","sabor":"Morango","acucar":"Sim"},{"id":"PAA21B","ean":"7899620913561","cod":"","nome":"LIPFITE 100 MG 30 COMP (CIPROFIBRATO)","cat":"Similar","grupo":"Antibióticos","icon":"💊","cx":200,"pmc":64.88,"pf":47.07,"pmpf":0,"descPct":76.0038,"precoLiq":11.295,"st":1.2596,"final":12.5546,"estoque":false,"cad":true,"promo":false,"mensagem":"","sabor":"","acucar":""},{"id":"PAA33A","ean":"7898060137544","cod":"328782","nome":"LORATADINA XPE 100 ML","cat":"Genérico","grupo":"Alergia","icon":"🧴","cx":60,"pmc":28.32,"pf":21.11,"pmpf":19.87,"descPct":70.8246,"precoLiq":6.1589,"st":2.3309,"final":8.4898,"estoque":false,"cad":true,"promo":false,"mensagem":"","sabor":"Pêssego","acucar":"Sim"},{"id":"PAA48A","ean":"7898060132075","cod":"328790","nome":"MALEATO DEXCLORFENIRAMINA + BETAMETASONA XPE 120ML","cat":"Genérico","grupo":"Alergia","icon":"🧴","cx":60,"pmc":23.49,"pf":17.51,"pmpf":19.99,"descPct":75.8354,"precoLiq":4.2312,"st":2.679,"final":6.9102,"estoque":false,"cad":true,"promo":false,"mensagem":"","sabor":"Morango","acucar":"Sim"},{"id":"PAA74A","ean":"7899620916630","cod":"354120","nome":"MIRTAZAPINA 15 MG 30 COMP ORODISP","cat":"Genérico","grupo":"Psiquiátrico","icon":"💊","cx":60,"pmc":89.77,"pf":65.13,"pmpf":55.23,"descPct":69.5596,"precoLiq":19.8258,"st":6.0187,"final":25.8445,"estoque":true,"cad":true,"promo":false,"mensagem":"","sabor":"","acucar":""},{"id":"PAA75A","ean":"7899620916647","cod":"354139","nome":"MIRTAZAPINA 30 MG 30 COMP ORODISP","cat":"Genérico","grupo":"Psiquiátrico","icon":"💊","cx":60,"pmc":168.38,"pf":122.16,"pmpf":85.12,"descPct":79.4399,"precoLiq":25.1162,"st":10.2006,"final":35.3168,"estoque":false,"cad":true,"promo":false,"mensagem":"","sabor":"","acucar":""},{"id":"PAA91A","ean":"7899620910638","cod":"","nome":"NECRORGAN 60 FLACONETES 10 ML SABOR ABACAXI","cat":"Outros","grupo":"Outros","icon":"💊","cx":12,"pmc":0,"pf":71.34,"pmpf":0,"descPct":64.4646,"precoLiq":25.351,"st":2.8271,"final":28.1781,"estoque":false,"cad":true,"promo":false,"mensagem":"","sabor":"","acucar":""},{"id":"PAA02A","ean":"7899620915039","cod":"329380","nome":"NIMESULIDA 100 MG 12 COMP","cat":"Genérico","grupo":"Dor/Febre","icon":"💊","cx":200,"pmc":24.59,"pf":17.84,"pmpf":11.52,"descPct":92.5245,"precoLiq":1.3336,"st":1.7317,"final":3.0653,"estoque":true,"cad":true,"promo":true,"mensagem":"","sabor":"","acucar":""},{"id":"PAA43A","ean":"7899620914155","cod":"","nome":"NIMESULIDA GTS 50 MG/ML 15 ML","cat":"Genérico","grupo":"Dor/Febre","icon":"🧴","cx":154,"pmc":28.77,"pf":20.87,"pmpf":16.53,"descPct":88.0911,"precoLiq":2.4854,"st":2.3876,"final":4.873,"estoque":false,"cad":true,"promo":false,"mensagem":"","sabor":"Acerola","acucar":"Não"},{"id":"PAA47A","ean":"7899620915329","cod":"","nome":"NITRATO DE MICONAZOL CREME DERM 20 MG 30 G","cat":"Genérico","grupo":"Antifúngicos","icon":"🧴","cx":144,"pmc":0,"pf":19.67,"pmpf":0,"descPct":62.1553,"precoLiq":7.4441,"st":0.8302,"final":8.2743,"estoque":false,"cad":true,"promo":false,"mensagem":"","sabor":"","acucar":""},{"id":"PAA06A","ean":"7898060132686","cod":"328626","nome":"NORFLOXACINO 400 MG 14 COMP","cat":"Genérico","grupo":"Antibióticos","icon":"💊","cx":100,"pmc":37.31,"pf":27.07,"pmpf":30.2,"descPct":74.561,"precoLiq":6.8863,"st":3.9633,"final":10.8496,"estoque":false,"cad":true,"promo":false,"mensagem":"","sabor":"","acucar":""},{"id":"PAA06B","ean":"7898060131535","cod":"328634","nome":"NORXACIN 400MG 14 COMP (NORFLOXACINO)","cat":"Similar","grupo":"Antibióticos","icon":"💊","cx":100,"pmc":37.31,"pf":27.07,"pmpf":34.55,"descPct":74.561,"precoLiq":6.8863,"st":4.7028,"final":11.5891,"estoque":false,"cad":true,"promo":false,"mensagem":"","sabor":"","acucar":""},{"id":"PAA01D","ean":"7899620910478","cod":"329428","nome":"NOVOPRAZOL 20 MG 28 CAPS - FRASCO","cat":"Similar","grupo":"Antiulceroso","icon":"💊","cx":154,"pmc":16.07,"pf":11.66,"pmpf":12.66,"descPct":75.7731,"precoLiq":2.8249,"st":1.672,"final":4.4969,"estoque":false,"cad":true,"promo":false,"mensagem":"","sabor":"","acucar":""},{"id":"PAA01C","ean":"7899620910485","cod":"329436","nome":"NOVOPRAZOL 20 MG 56 CAPS - FRASCO","cat":"Similar","grupo":"Antiulceroso","icon":"💊","cx":154,"pmc":27.06,"pf":19.63,"pmpf":16.71,"descPct":78.3833,"precoLiq":4.2434,"st":2.1193,"final":6.3627,"estoque":false,"cad":true,"promo":false,"mensagem":"","sabor":"","acucar":""},{"id":"PAA01B","ean":"7898060134147","cod":"329444","nome":"OMEPRAZOL 20 MG 28 CAPS - FRASCO","cat":"Genérico","grupo":"Antiulceroso","icon":"💊","cx":154,"pmc":26.52,"pf":19.24,"pmpf":14.96,"descPct":85.3178,"precoLiq":2.8249,"st":2.063,"final":4.8879,"estoque":false,"cad":true,"promo":false,"mensagem":"","sabor":"","acucar":""},{"id":"PAA01A","ean":"7898060134154","cod":"329452","nome":"OMEPRAZOL 20 MG 56 CAPS - FRASCO","cat":"Genérico","grupo":"Antiulceroso","icon":"💊","cx":154,"pmc":41.85,"pf":30.36,"pmpf":23.44,"descPct":86.0232,"precoLiq":4.2434,"st":3.2634,"final":7.5068,"estoque":false,"cad":true,"promo":true,"mensagem":"","sabor":"","acucar":""},{"id":"PAA72A","ean":"7899620913776","cod":"329460","nome":"PARACETAMOL 750 MG 20 COMP","cat":"Genérico","grupo":"Dor/Febre","icon":"💊","cx":200,"pmc":0,"pf":18.04,"pmpf":14.97,"descPct":84.5428,"precoLiq":2.7885,"st":2.0709,"final":4.8594,"estoque":true,"cad":true,"promo":true,"mensagem":"","sabor":"","acucar":""},{"id":"PAB02A","ean":"7899620913059","cod":"329487","nome":"PERIODENT SOLUÇAO BUCAL 250 ML COM ALCOOL","cat":"Outros","grupo":"Outros","icon":"🦷","cx":30,"pmc":0,"pf":41.61,"pmpf":0,"descPct":76.7196,"precoLiq":9.687,"st":1.0803,"final":10.7673,"estoque":true,"cad":true,"promo":false,"mensagem":"","sabor":"","acucar":""},{"id":"PAB02B","ean":"7899620913066","cod":"329495","nome":"PERIODENT SOLUÇAO BUCAL 250 ML SEM ALCOOL","cat":"Outros","grupo":"Outros","icon":"🦷","cx":30,"pmc":0,"pf":41.61,"pmpf":0,"descPct":76.7196,"precoLiq":9.687,"st":1.0803,"final":10.7673,"estoque":true,"cad":true,"promo":false,"mensagem":"","sabor":"","acucar":""},{"id":"PAA18A","ean":"7899620912151","cod":"329550","nome":"PREDNISONA 20 MG 10 COMP","cat":"Genérico","grupo":"Anti-inflamatório","icon":"💊","cx":200,"pmc":22.51,"pf":16.33,"pmpf":15.29,"descPct":77.6529,"precoLiq":3.6493,"st":1.9789,"final":5.6282,"estoque":false,"cad":true,"promo":false,"mensagem":"","sabor":"","acucar":""},{"id":"PAA18B","ean":"7899620912144","cod":"","nome":"PREDNISONA 20 MG 20 COMP","cat":"Genérico","grupo":"Anti-inflamatório","icon":"💊","cx":200,"pmc":32.5,"pf":23.58,"pmpf":21.48,"descPct":73.2638,"precoLiq":6.3044,"st":2.5799,"final":8.8843,"estoque":false,"cad":true,"promo":false,"mensagem":"","sabor":"","acucar":""},{"id":"PAA56A","ean":"7899620915244","cod":"354112","nome":"PREGABALINA 150 MG 30 CAPS","cat":"Genérico","grupo":"Psiquiátrico","icon":"💊","cx":98,"pmc":153.83,"pf":111.6,"pmpf":53.29,"descPct":88.6149,"precoLiq":12.7058,"st":6.8993,"final":19.6051,"estoque":false,"cad":true,"promo":false,"mensagem":"","sabor":"","acucar":""},{"id":"PAA55A","ean":"7899620915237","cod":"354104","nome":"PREGABALINA 75 MG 30 CAPS","cat":"Genérico","grupo":"Psiquiátrico","icon":"💊","cx":98,"pmc":98.75,"pf":71.64,"pmpf":38.22,"descPct":88.1706,"precoLiq":8.4746,"st":5.0567,"final":13.5313,"estoque":false,"cad":true,"promo":false,"mensagem":"","sabor":"","acucar":""},{"id":"PAA49A","ean":"7899620915336","cod":"","nome":"PROCTGLOBO POMADA 20 G + APLICADOR","cat":"Similar","grupo":"Proctológico","icon":"🧴","cx":144,"pmc":0,"pf":27.4,"pmpf":0,"descPct":66.0178,"precoLiq":9.3111,"st":1.0384,"final":10.3495,"estoque":false,"cad":true,"promo":false,"mensagem":"","sabor":"","acucar":""},{"id":"PAA16B","ean":"7898060131290","cod":"328685","nome":"PROPALOL 40MG 40 COMP  (PROPANOLOL)","cat":"Similar","grupo":"Cardiovascular","icon":"💊","cx":200,"pmc":11.44,"pf":8.3,"pmpf":0,"descPct":59.5385,"precoLiq":3.3583,"st":0.3745,"final":3.7328,"estoque":false,"cad":true,"promo":false,"mensagem":"","sabor":"","acucar":""},{"id":"PAA50A","ean":"7899620915367","cod":"329614","nome":"RISPERIDONA 1 MG 30 COMP","cat":"Genérico","grupo":"Psiquiátrico","icon":"💊","cx":98,"pmc":37.3,"pf":27.06,"pmpf":22.59,"descPct":82.0338,"precoLiq":4.8617,"st":3.0138,"final":7.8755,"estoque":false,"cad":true,"promo":false,"mensagem":"","sabor":"","acucar":""},{"id":"PAA51A","ean":"7899620915404","cod":"329622","nome":"RISPERIDONA 2 MG 30 COMP","cat":"Genérico","grupo":"Psiquiátrico","icon":"💊","cx":98,"pmc":44.3,"pf":32.14,"pmpf":23.87,"descPct":81.6671,"precoLiq":5.8922,"st":3.0562,"final":8.9484,"estoque":true,"cad":true,"promo":true,"mensagem":"","sabor":"","acucar":""},{"id":"PAA52A","ean":"7899620915442","cod":"","nome":"RISPERIDONA 3 MG 30 COMP","cat":"Genérico","grupo":"Psiquiátrico","icon":"💊","cx":98,"pmc":69.97,"pf":50.76,"pmpf":33.22,"descPct":85.8603,"precoLiq":7.1773,"st":4.4273,"final":11.6046,"estoque":false,"cad":true,"promo":false,"mensagem":"","sabor":"","acucar":""},{"id":"PAA02B","ean":"7899620915046","cod":"329703","nome":"SCAFLOGIN 100 MG 12 COMP (NIMESULIDA)","cat":"Similar","grupo":"Dor/Febre","icon":"💊","cx":200,"pmc":17.27,"pf":12.53,"pmpf":11.88,"descPct":89.3566,"precoLiq":1.3336,"st":1.7929,"final":3.1265,"estoque":false,"cad":true,"promo":false,"mensagem":"","sabor":"","acucar":""},{"id":"PAA43B","ean":"7899620914827","cod":"328693","nome":"SCAFLOGIN GOTAS GTS 50MG/ML 15 ML (NIMESULIDA)","cat":"Similar","grupo":"Dor/Febre","icon":"🧴","cx":154,"pmc":21.32,"pf":15.47,"pmpf":13.05,"descPct":83.9341,"precoLiq":2.4854,"st":1.796,"final":4.2814,"estoque":false,"cad":true,"promo":false,"mensagem":"","sabor":"Acerola","acucar":"Não"},{"id":"PAA10C","ean":"7899620911864","cod":"329720","nome":"SECNIDAZOL 1000 MG 04 COMP","cat":"Genérico","grupo":"Antiparasitário","icon":"💊","cx":200,"pmc":40.74,"pf":30.37,"pmpf":22.73,"descPct":86.6266,"precoLiq":4.0615,"st":3.1736,"final":7.2351,"estoque":false,"cad":true,"promo":false,"mensagem":"","sabor":"","acucar":""},{"id":"PAA10A","ean":"7899620911857","cod":"329711","nome":"SECNIDAZOL1000 MG 02 COMP","cat":"Genérico","grupo":"Antiparasitário","icon":"💊","cx":200,"pmc":24.54,"pf":18.29,"pmpf":17.64,"descPct":86.8752,"precoLiq":2.4005,"st":2.5907,"final":4.9912,"estoque":false,"cad":true,"promo":false,"mensagem":"","sabor":"","acucar":""},{"id":"PAA10B","ean":"7898060138220","cod":"","nome":"SECNIMAX 1000MG 02 COMP (SECNIDAZOL)","cat":"Similar","grupo":"Antiparasitário","icon":"💊","cx":200,"pmc":24.54,"pf":18.29,"pmpf":19.42,"descPct":86.8752,"precoLiq":2.4005,"st":2.8933,"final":5.2938,"estoque":false,"cad":true,"promo":false,"mensagem":"","sabor":"","acucar":""},{"id":"PAA10D","ean":"7898060138237","cod":"","nome":"SECNIMAX 1000MG 04 COMP (SECNIDAZOL)","cat":"Similar","grupo":"Antiparasitário","icon":"💊","cx":200,"pmc":42.47,"pf":31.66,"pmpf":0,"descPct":87.1715,"precoLiq":4.0615,"st":0.4529,"final":4.5144,"estoque":false,"cad":true,"promo":false,"mensagem":"","sabor":"","acucar":""},{"id":"PAA09A","ean":"7899620912441","cod":"328707","nome":"SIMETICONA 40 MG 20 COMP","cat":"Outros","grupo":"Gastrointestinal","icon":"💊","cx":200,"pmc":0,"pf":10.3,"pmpf":0,"descPct":72.9273,"precoLiq":2.7885,"st":0.311,"final":3.0995,"estoque":false,"cad":true,"promo":true,"mensagem":"","sabor":"","acucar":""},{"id":"PAA09B","ean":"7898060132730","cod":"329754","nome":"SINTAFLAT 40 MG 20 COMP (SIMETICONA)","cat":"Outros","grupo":"Gastrointestinal","icon":"💊","cx":200,"pmc":0,"pf":11.13,"pmpf":0,"descPct":74.9462,"precoLiq":2.7885,"st":0.311,"final":3.0995,"estoque":true,"cad":true,"promo":false,"mensagem":"","sabor":"","acucar":""},{"id":"PAB50B","ean":"7899620911598","cod":"","nome":"SINVASMAX 10 MG 30 COMP (SINVASTATINA)","cat":"Similar","grupo":"Colesterol","icon":"💊","cx":90,"pmc":9.43,"pf":6.84,"pmpf":0,"descPct":64.7274,"precoLiq":2.4126,"st":0.2691,"final":2.6817,"estoque":false,"cad":true,"promo":false,"mensagem":"","sabor":"","acucar":""},{"id":"PAA13B","ean":"7898060138114","cod":"329770","nome":"SINVASMAX 20 MG 30 COMP (SINVASTATINA)","cat":"Similar","grupo":"Colesterol","icon":"💊","cx":200,"pmc":19.16,"pf":13.9,"pmpf":5.46,"descPct":79.6773,"precoLiq":2.8249,"st":0.448,"final":3.2729,"estoque":false,"cad":true,"promo":false,"mensagem":"","sabor":"","acucar":""},{"id":"PAA14B","ean":"7898060138091","cod":"329789","nome":"SINVASMAX 40 MG 30 COMP (SINVASTATINA)","cat":"Similar","grupo":"Colesterol","icon":"💊","cx":200,"pmc":38.36,"pf":27.83,"pmpf":10.23,"descPct":80.222,"precoLiq":5.5042,"st":0.8034,"final":6.3076,"estoque":false,"cad":true,"promo":false,"mensagem":"","sabor":"","acucar":""},{"id":"PAA13A","ean":"7899620911031","cod":"329797","nome":"SINVASTATINA 20 MG 30 COMP","cat":"Genérico","grupo":"Colesterol","icon":"💊","cx":200,"pmc":19.16,"pf":13.9,"pmpf":6.08,"descPct":79.6773,"precoLiq":2.8249,"st":0.5534,"final":3.3783,"estoque":true,"cad":true,"promo":true,"mensagem":"","sabor":"","acucar":""},{"id":"PAA14A","ean":"7899620911079","cod":"353973","nome":"SINVASTATINA 40 MG 30 COMP","cat":"Genérico","grupo":"Colesterol","icon":"💊","cx":200,"pmc":38.36,"pf":27.83,"pmpf":9.95,"descPct":80.222,"precoLiq":5.5042,"st":0.7558,"final":6.26,"estoque":false,"cad":true,"promo":true,"mensagem":"","sabor":"","acucar":""},{"id":"PAA37B","ean":"7899620911161","cod":"328812","nome":"SPECTOFLUX AD XPE 30 MG/5 ML 120 ML+COPO","cat":"Similar","grupo":"Tosse/Expectorante","icon":"🧴","cx":60,"pmc":34.22,"pf":25.51,"pmpf":24.24,"descPct":77.5203,"precoLiq":5.7346,"st":3.1459,"final":8.8805,"estoque":false,"cad":true,"promo":false,"mensagem":"","sabor":"Pêssego","acucar":"Não"},{"id":"PAA92A","ean":"7899620910690","cod":"","nome":"TONICO VITAL 250 ML SUSP TRADICIONAL (VITAMINA)","cat":"Outros","grupo":"Vitaminas/Suplementos","icon":"💊","cx":30,"pmc":0,"pf":11.66,"pmpf":0,"descPct":73.0697,"precoLiq":3.1401,"st":0.3502,"final":3.4903,"estoque":false,"cad":true,"promo":false,"mensagem":"","sabor":"","acucar":""},{"id":"PAA92C","ean":"7899620910713","cod":"329290","nome":"TONICO VITAL 500 ML SUSP TRADICIONAL (VITAMINA)","cat":"Outros","grupo":"Vitaminas/Suplementos","icon":"💊","cx":24,"pmc":0,"pf":16.17,"pmpf":0,"descPct":61.6865,"precoLiq":6.1953,"st":0.6909,"final":6.8862,"estoque":false,"cad":true,"promo":false,"mensagem":"","sabor":"","acucar":""}];
+
+const DEFAULT_PW = 'globo@admin2026';
+const $ = id => document.getElementById(id);
+
+function calcPrices(pf, pmpf, descPct){
+  const d = (descPct > 1 ? descPct/100 : descPct);
+  const pl = +(pf * (1 - d)).toFixed(4);
+  let st;
+  if(pmpf && pmpf > 0){ st = +((pmpf - pl) * 0.17).toFixed(4); }
+  else { st = +(pl * 0.656 * 0.17).toFixed(4); }
+  if(st < 0) st = 0;
+  return { precoLiq: pl, st, final: +(pl + st).toFixed(4) };
+}
+function fmtBR(v){ v=Number(v)||0; return 'R$ '+v.toFixed(2).replace('.',',').replace(/\B(?=(\d{3})+(?!\d),)/g,'.'); }
+
+// Estado
+let PRODUTOS = [];
+let uploadStaging = null;  // dados em preview
+let uploadAusentes = [];   // produtos do catálogo que não vieram na planilha enviada
+
+function loadProdutos(){
+  return JSON.parse(JSON.stringify(PRODUTOS_BAKED));
+}
+
+/* Normaliza o que vem da API: pode ser um array (formato antigo)
+   ou { versao, produtos } (formato atual, com controle de versão do catálogo). */
+function normalizarCatalogo(raw){
+  if(Array.isArray(raw)) return { versao: null, produtos: raw };
+  if(raw && Array.isArray(raw.produtos)) return { versao: raw.versao || null, produtos: raw.produtos };
+  return null;
+}
+
+/* Quando a versão gravada é mais antiga que a versão embutida (nova planilha),
+   o catálogo é rebaseado: produtos que saíram da planilha somem e os que ficaram
+   recebem os preços novos. Fotos enviadas no admin e produtos criados à mão
+   (manual: true) são preservados. */
+function reconciliarCatalogo(stored){
+  if(!stored || !stored.produtos.length) return { produtos: loadProdutos(), mudou: true };
+  if(stored.versao === CATALOGO_VERSAO) return { produtos: stored.produtos, mudou: false };
+  const antigos = new Map(stored.produtos.map(p => [String(p.ean), p]));
+  const produtos = PRODUTOS_BAKED.map(b => {
+    const p = JSON.parse(JSON.stringify(b));
+    const a = antigos.get(String(b.ean));
+    if(a && a.img) p.img = a.img;
+    return p;
+  });
+  const eansBaked = new Set(PRODUTOS_BAKED.map(p => String(p.ean)));
+  stored.produtos
+    .filter(p => p.manual && !eansBaked.has(String(p.ean)))
+    .forEach(p => produtos.push(JSON.parse(JSON.stringify(p))));
+  return { produtos, mudou: true };
+}
+
+let _catalogoDesatualizado = false;
+
+async function loadProdutosFromServer(){
+  let stored = null;
+  try {
+    const resp = await fetch('/api/produtos');
+    if(resp.ok) stored = normalizarCatalogo(await resp.json());
+  } catch(e){}
+  const { produtos, mudou } = reconciliarCatalogo(stored);
+  _catalogoDesatualizado = mudou;
+  return produtos;
+}
+
+function saveProdutos(){
+  PRODUTOS.forEach(p => {
+    const r = calcPrices(p.pf, p.pmpf, p.descPct);
+    p.precoLiq = r.precoLiq; p.st = r.st; p.final = r.final;
+  });
+  fetch('/api/produtos', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ versao: CATALOGO_VERSAO, produtos: PRODUTOS })
+  }).catch(e => console.warn('Erro ao salvar produtos:', e));
+}
+
+/* ============ LOGIN ============ */
+let _adminPw = null;
+async function loadPw(){
+  try {
+    const resp = await fetch('/api/config?chave=admin_pw');
+    if(resp.ok){
+      const data = await resp.json();
+      if(data && data.valor) { _adminPw = data.valor; return; }
+    }
+  } catch(e){}
+  _adminPw = DEFAULT_PW;
+}
+function getPw(){ return _adminPw || DEFAULT_PW; }
+async function doLogin(){
+  if(!_adminPw) await loadPw();
+  const pw = $('adm-pw').value;
+  if(pw === getPw()){
+    sessionStorage.setItem('gp_adm_sess','1');
+    showAdmin();
+  } else {
+    $('adm-err').classList.add('on');
+    setTimeout(()=>$('adm-err').classList.remove('on'), 3000);
+  }
+}
+function doLogout(){
+  sessionStorage.removeItem('gp_adm_sess');
+  $('admin-screen').style.display = 'none';
+  $('auth-screen').style.display = 'flex';
+  $('adm-pw').value = '';
+}
+async function showAdmin(){
+  $('auth-screen').style.display = 'none';
+  $('admin-screen').style.display = 'block';
+  PRODUTOS = await loadProdutosFromServer();
+  if(_catalogoDesatualizado){
+    // Catálogo gravado é de uma planilha anterior — grava já a versão nova
+    // para que a loja pare de exibir os produtos descontinuados.
+    saveProdutos();
+    _catalogoDesatualizado = false;
+  }
+  refreshAll();
+}
+function alterarSenha(){
+  const a = $('cfg-pw').value; const b = $('cfg-pw2').value;
+  if(a.length < 6) return alert('Senha mínimo 6 caracteres.');
+  if(a !== b) return alert('Senhas não coincidem.');
+  fetch('/api/config', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ chave: 'admin_pw', valor: a })
+  }).then(() => { _adminPw = a; }).catch(e => console.warn('Erro ao salvar senha:', e));
+  $('cfg-pw').value = ''; $('cfg-pw2').value = '';
+  alert('✓ Senha alterada com sucesso.');
+}
+
+/* ============ TABS ============ */
+function goTab(t){
+  document.querySelectorAll('.tabbtn').forEach(b => b.classList.toggle('on', b.dataset.tab===t));
+  document.querySelectorAll('.tab').forEach(s => s.classList.toggle('on', s.id==='tab-'+t));
+  if(t==='produtos') renderTable();
+  if(t==='acessos') { refreshAcessosDist(); renderAcessos(); }
+  if(t==='pedidos') renderPedidos();
+  if(t==='dashboard') refreshDashboard();
+  if(t==='clientes') { loadClientesFromServer().then(()=>renderClientes()); }
+  if(t==='contas') { loadUsuariosFromServer().then(()=>renderUsuarios()); }
+  if(t==='lgpd') { loadConsentimentosFromServer().then(()=>renderConsentimentos()); }
+  if(t==='config'){
+    fetch('/api/config?chave=email_destino').then(r=>r.json()).then(data => {
+      if(data && data.valor && $('cfg-email')) $('cfg-email').value = data.valor;
+      else if($('cfg-email')) $('cfg-email').value = 'rodrigo.demarco@globopharma.com.br';
+    }).catch(() => {
+      if($('cfg-email')) $('cfg-email').value = 'rodrigo.demarco@globopharma.com.br';
+    });
+    fetch('/api/config?chave=pedido_minimo').then(r=>r.json()).then(data => {
+      if(data && data.valor && $('cfg-pedido-min')) $('cfg-pedido-min').value = data.valor;
+      else if($('cfg-pedido-min')) $('cfg-pedido-min').value = '';
+    }).catch(() => {
+      if($('cfg-pedido-min')) $('cfg-pedido-min').value = '';
+    });
+  }
+}
+
+/* ============ DASHBOARD ============ */
+function refreshDashboard(){
+  $('k-prod').textContent = PRODUTOS.length;
+  const cad = PRODUTOS.filter(p=>p.cad).length;
+  $('k-prod-sub').textContent = cad+' cadastrados na Pharmalog';
+  const stk = PRODUTOS.filter(p=>p.estoque).length;
+  $('k-stk').textContent = stk;
+  $('k-stk-tot').textContent = PRODUTOS.length;
+  $('k-prm').textContent = PRODUTOS.filter(p=>p.promo).length;
+  const acs = getAcessos();
+  $('k-acc').textContent = acs.length;
+  const uniq = new Set(acs.map(a => (a.cnpj||a.telefone||a.nome||'').toLowerCase())).size;
+  $('k-acc-uniq').textContent = uniq + ' clientes únicos';
+  // Pedidos
+  const peds = getPedidos();
+  const hojeIni = (() => { const d = new Date(); d.setHours(0,0,0,0); return d.getTime(); })();
+  $('k-ped').textContent = peds.length;
+  const hoje = peds.filter(p=>p.ts>=hojeIni).length;
+  $('k-ped-sub').textContent = hoje + ' hoje';
+  // Contas de acesso
+  $('k-cta').textContent = USUARIOS.length;
+  $('k-cta-sub').textContent = USUARIOS.filter(u => u.status === 'ativo').length + ' ativas';
+}
+
+/* ============ TABELA PRODUTOS ============ */
+function filtraProdutos(){
+  const q = ($('prod-search').value||'').toLowerCase().trim();
+  const f = $('prod-filter').value;
+  return PRODUTOS.filter(p => {
+    if(f==='promo' && !p.promo) return false;
+    if(f==='stock' && !p.estoque) return false;
+    if(f==='nostock' && p.estoque) return false;
+    if(f==='nocad' && p.cad) return false;
+    if(!q) return true;
+    return (p.nome+' '+p.ean+' '+(p.cod||'')+' '+p.cat+' '+p.grupo).toLowerCase().includes(q);
+  });
+}
+function renderTable(){
+  const tbody = $('prod-tbody');
+  const filtered = filtraProdutos();
+  if(!filtered.length){ tbody.innerHTML = '<tr><td colspan="17" class="empty-tbl">Nenhum produto encontrado</td></tr>'; return; }
+  let html = '';
+  filtered.forEach(p => {
+    const r = calcPrices(p.pf, p.pmpf, p.descPct);
+    const catCls = p.cat==='Genérico'?'':(p.cat==='Similar'?'similar':'outros');
+    const hasImg = !!p.img;
+    html += `<tr class="${p.promo?'promo-row':''}" data-id="${p.id}">
+      <td class="center">
+        <label class="img-cell ${hasImg?'has-img':''}" title="${hasImg?'Clique para trocar a imagem':'Clique para adicionar uma imagem'}">
+          ${hasImg?`<img src="${p.img}" alt=""/><span class="rm-btn" onclick="event.preventDefault();removeImg('${p.id}')" title="Remover imagem">✕</span>`:'<span class="add-ico">+</span>'}
+          <input type="file" accept="image/*" onchange="uploadImg('${p.id}', this.files[0])"/>
+        </label>
+      </td>
+      <td style="font-family:monospace;font-size:11px">${p.ean||'-'}</td>
+      <td>
+        <div style="font-weight:800;font-size:12.5px">${p.icon} ${p.nome}</div>
+        <div style="font-size:10.5px;color:var(--tx2);margin-top:2px">${p.grupo} · SAP ${p.id}${p.cod?' · Cod '+p.cod:''}${!p.cad?' · <span style="color:#aa6644">⚠ sem cadastro</span>':''}</div>
+      </td>
+      <td><span class="cat-pill ${catCls}">${p.cat}</span></td>
+      <td class="num">${fmtBR(p.pf)}</td>
+      <td class="num">${p.pmc?fmtBR(p.pmc):'—'}</td>
+      <td class="num">${p.pmpf?fmtBR(p.pmpf):'—'}</td>
+      <td><input class="cell" type="number" min="0" max="100" step="0.01" value="${(+p.descPct).toFixed(2)}" oninput="updProd('${p.id}','descPct',this.value)"/></td>
+      <td class="num" id="cell-liq-${p.id}">${fmtBR(r.precoLiq)}</td>
+      <td class="num" id="cell-st-${p.id}">${fmtBR(r.st)}</td>
+      <td class="num" id="cell-fin-${p.id}" style="font-weight:900;color:var(--or-d)">${fmtBR(r.final)}</td>
+      <td class="center"><input type="checkbox" ${p.estoque?'checked':''} onchange="updProd('${p.id}','estoque',this.checked)"/></td>
+      <td class="center"><input type="checkbox" ${p.promo?'checked':''} onchange="updProd('${p.id}','promo',this.checked)"/></td>
+      <td><input class="cell" type="text" value="${(p.mensagem||'').replace(/"/g,'&quot;')}" placeholder="Ex: Maior desconto do mercado" oninput="updProd('${p.id}','mensagem',this.value)" style="min-width:160px;font-size:11px"/></td>
+      <td><input class="cell" type="text" value="${(p.sabor||'').replace(/"/g,'&quot;')}" placeholder="Ex: Framboesa" oninput="updProd('${p.id}','sabor',this.value)" style="min-width:100px;font-size:11px"/></td>
+      <td><select class="cell" onchange="updProd('${p.id}','acucar',this.value)" style="font-size:11px;padding:4px 6px;border:1.5px solid var(--bd);border-radius:8px;font-family:'Nunito';font-weight:700">
+        <option value=""${!p.acucar?' selected':''}>—</option>
+        <option value="Sim"${p.acucar==='Sim'?' selected':''}>Sim</option>
+        <option value="Não"${p.acucar==='Não'?' selected':''}>Não</option>
+      </select></td>
+      <td class="center"><button class="row-del" title="Excluir produto do catálogo" onclick="excluirProduto('${p.id}')">🗑</button></td>
+    </tr>`;
+  });
+  tbody.innerHTML = html;
+}
+function updProd(id, field, val){
+  const p = PRODUTOS.find(x=>x.id===id); if(!p) return;
+  if(field==='descPct'){
+    let v = parseFloat(val); if(isNaN(v)||v<0) v=0; if(v>100) v=100;
+    p.descPct = v;
+    const r = calcPrices(p.pf, p.pmpf, v);
+    p.precoLiq = r.precoLiq; p.st = r.st; p.final = r.final;
+    $('cell-liq-'+id).textContent = fmtBR(r.precoLiq);
+    $('cell-st-'+id).textContent = fmtBR(r.st);
+    $('cell-fin-'+id).textContent = fmtBR(r.final);
+  } else if(field==='estoque' || field==='promo'){
+    p[field] = !!val;
+    if(field==='promo'){
+      // re-render só a linha para aplicar classe
+      const tr = document.querySelector(`tr[data-id="${id}"]`);
+      if(tr) tr.classList.toggle('promo-row', !!val);
+    }
+  } else if(field==='mensagem'){
+    p.mensagem = String(val).trim();
+  } else if(field==='sabor'){
+    p.sabor = String(val).trim();
+  } else if(field==='acucar'){
+    p.acucar = val || '';
+  }
+}
+function salvarProdutos(){
+  saveProdutos();
+  $('prod-saved').classList.add('on');
+  setTimeout(()=>$('prod-saved').classList.remove('on'), 3500);
+  refreshDashboard();
+}
+
+/* ============ INCLUIR / EXCLUIR PRODUTO ============ */
+function excluirProduto(id){
+  const i = PRODUTOS.findIndex(p => p.id === id); if(i < 0) return;
+  const p = PRODUTOS[i];
+  if(!confirm(`Excluir "${p.nome}" do catálogo?\n\nO produto deixa de aparecer na loja imediatamente. Para trazê-lo de volta, use "Novo produto" ou reenvie a planilha.`)) return;
+  PRODUTOS.splice(i, 1);
+  saveProdutos();
+  renderTable();
+  updateStorageBar();
+  refreshDashboard();
+}
+
+function novoIdProduto(ean){
+  const usados = new Set(PRODUTOS.map(p => String(p.id)));
+  const base = 'X' + String(ean).slice(-8);
+  if(!usados.has(base)) return base;
+  let n = 2;
+  while(usados.has(base + '-' + n)) n++;
+  return base + '-' + n;
+}
+
+function abrirNovoProduto(){
+  ['np-nome','np-ean','np-cod','np-grupo','np-msg','np-sabor'].forEach(id => $(id).value = '');
+  ['np-cx','np-pf','np-pmc','np-pmpf','np-desc'].forEach(id => $(id).value = '');
+  $('np-cat').value = 'Genérico';
+  $('np-icon').value = '💊';
+  $('np-acucar').value = '';
+  $('np-estoque').checked = false;
+  $('np-promo').checked = false;
+  $('np-err').classList.remove('on');
+  $('prodModal').classList.add('on');
+  setTimeout(() => $('np-nome').focus(), 60);
+}
+function fecharNovoProduto(){ $('prodModal').classList.remove('on'); }
+function npErr(msg){
+  $('np-err-msg').textContent = msg;
+  $('np-err').classList.add('on');
+}
+
+function salvarNovoProduto(){
+  const nome = $('np-nome').value.trim();
+  const ean  = $('np-ean').value.replace(/\D/g,'');
+  const pf   = parseNum($('np-pf').value);
+  if(!nome) return npErr('Informe a descrição do produto.');
+  if(ean.length < 8) return npErr('Informe um EAN válido (pelo menos 8 dígitos).');
+  if(PRODUTOS.some(p => String(p.ean) === ean)) return npErr('Já existe um produto com este EAN no catálogo.');
+  if(!(pf > 0)) return npErr('Informe o PF 17% (Preço de Fábrica).');
+
+  const pmpf = parseNum($('np-pmpf').value);
+  let descPct = parseNum($('np-desc').value);
+  if(descPct < 0) descPct = 0; if(descPct > 100) descPct = 100;
+  const cat = $('np-cat').value;
+  const r = calcPrices(pf, pmpf, descPct);
+  const novo = {
+    id: novoIdProduto(ean), ean, cod: $('np-cod').value.trim(),
+    nome, cat, grupo: $('np-grupo').value.trim() || cat, icon: $('np-icon').value,
+    cx: parseNum($('np-cx').value), pmc: parseNum($('np-pmc').value), pf, pmpf, descPct,
+    precoLiq: r.precoLiq, st: r.st, final: r.final,
+    estoque: $('np-estoque').checked, cad: true, promo: $('np-promo').checked,
+    mensagem: $('np-msg').value.trim(), sabor: $('np-sabor').value.trim(), acucar: $('np-acucar').value,
+    manual: true
+  };
+  PRODUTOS.push(novo);
+  PRODUTOS.sort((a,b) => String(a.nome).localeCompare(String(b.nome), 'pt-BR'));
+  saveProdutos();
+  fecharNovoProduto();
+  $('prod-search').value = ean;
+  renderTable();
+  refreshDashboard();
+  $('prod-saved').classList.add('on');
+  setTimeout(()=>$('prod-saved').classList.remove('on'), 3500);
+}
+
+/* ============ IMAGENS ============ */
+// Redimensiona uma imagem para max 320x320 em JPEG base64
+function resizeImage(file, maxSize=320, quality=0.78){
+  return new Promise((resolve, reject) => {
+    if(!file || !file.type.startsWith('image/')) return reject(new Error('Arquivo não é imagem.'));
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      let w = img.width, h = img.height;
+      if(w > h){ if(w > maxSize){ h = Math.round(h * maxSize/w); w = maxSize; } }
+      else { if(h > maxSize){ w = Math.round(w * maxSize/h); h = maxSize; } }
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = '#fff';
+      ctx.fillRect(0,0,w,h);
+      ctx.drawImage(img, 0, 0, w, h);
+      resolve(canvas.toDataURL('image/jpeg', quality));
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('Imagem inválida.')); };
+    img.src = url;
+  });
+}
+
+async function uploadImg(id, file){
+  if(!file) return;
+  try {
+    const dataUrl = await resizeImage(file);
+    const p = PRODUTOS.find(x => x.id === id);
+    if(!p) return;
+    p.img = dataUrl;
+    saveProdutos();
+    renderTable();
+    updateStorageBar();
+  } catch(err){
+    alert('Erro ao processar imagem: '+err.message);
+  }
+}
+
+function removeImg(id){
+  const p = PRODUTOS.find(x => x.id === id);
+  if(!p) return;
+  delete p.img;
+  saveProdutos();
+  renderTable();
+  updateStorageBar();
+}
+
+async function bulkImgUpload(files){
+  if(!files || !files.length) return;
+  const result = $('bulk-result');
+  result.innerHTML = '<span style="color:var(--tx2)">Processando...</span>';
+  // Cria índice por EAN e SAP
+  const byEan = new Map(PRODUTOS.map(p => [String(p.ean), p]));
+  const bySap = new Map(PRODUTOS.map(p => [String(p.id).toLowerCase(), p]));
+  let ok = 0, fail = 0, naoEncontrados = [];
+  for(const f of files){
+    const stem = f.name.replace(/\.[^.]+$/,'').trim();
+    // procura por EAN (qualquer sequência de 8-14 dígitos no nome)
+    let p = byEan.get(stem);
+    if(!p){
+      const m = stem.match(/\b\d{8,14}\b/);
+      if(m) p = byEan.get(m[0]);
+    }
+    if(!p) p = bySap.get(stem.toLowerCase());
+    if(!p){
+      naoEncontrados.push(f.name);
+      fail++;
+      continue;
+    }
+    try {
+      const dataUrl = await resizeImage(f);
+      p.img = dataUrl;
+      ok++;
+    } catch(e){ fail++; }
+  }
+  saveProdutos();
+  let msg = `<b style="color:var(--gr)">✓ ${ok} imagem(ns) atribuída(s)</b>`;
+  if(fail) msg += ` · <span style="color:var(--re)">${fail} sem correspondência</span>`;
+  if(naoEncontrados.length) msg += `<br><span style="color:var(--tx2);font-size:11px">Não casados: ${naoEncontrados.slice(0,5).join(', ')}${naoEncontrados.length>5?', ...':''}</span>`;
+  result.innerHTML = msg;
+  renderTable();
+  updateStorageBar();
+}
+
+// drag/drop bulk
+(function(){
+  const z = document.getElementById('bulkZone');
+  if(!z) return;
+  z.addEventListener('click', () => document.getElementById('bulkImgs').click());
+  z.addEventListener('dragover', e => { e.preventDefault(); z.classList.add('drag'); });
+  z.addEventListener('dragleave', () => z.classList.remove('drag'));
+  z.addEventListener('drop', e => {
+    e.preventDefault(); z.classList.remove('drag');
+    if(e.dataTransfer.files.length) bulkImgUpload(e.dataTransfer.files);
+  });
+})();
+
+function updateStorageBar(){
+  let totalBytes = 0;
+  PRODUTOS.forEach(p => { if(p.img) totalBytes += p.img.length * 0.75; }); // base64 → bytes ~3/4
+  const kb = Math.round(totalBytes/1024);
+  const mb = (totalBytes/1024/1024).toFixed(2);
+  const fill = $('img-storage-fill');
+  const txt = $('img-storage-txt');
+  if(!fill || !txt) return;
+  txt.textContent = totalBytes > 1024*1024 ? mb+' MB' : kb+' KB';
+  // Mostra % até 4MB (referência visual)
+  const pct = Math.min(100, Math.round(totalBytes / (4*1024*1024) * 100));
+  fill.style.width = pct+'%';
+  fill.classList.remove('warn','danger');
+  if(pct > 80) fill.classList.add('danger');
+  else if(pct > 60) fill.classList.add('warn');
+}
+function resetProdutos(){
+  if(!confirm('Tem certeza? Isso vai descartar todas as customizações e voltar à carga inicial.')) return;
+  PRODUTOS = JSON.parse(JSON.stringify(PRODUTOS_BAKED));
+  saveProdutos();
+  renderTable();
+  refreshDashboard();
+  alert('✓ Produtos restaurados ao padrão.');
+}
+
+/* ============ EXPORT EXCEL ============ */
+function exportarExcel(){
+  const data = [
+    ['EAN','Codigo Interno Pharmalog','Descrição Produto','Categoria','Caixa Padrão','PF 17%','PMC 17%','PMPF','Desconto','Preço Líquido','ST (Substituição Tributária)','Final c/ST','ESTOQUE','PROMOÇÃO','Mensagem','Sabor','Açúcar']
+  ];
+  PRODUTOS.forEach(p => {
+    const r = calcPrices(p.pf, p.pmpf, p.descPct);
+    data.push([
+      p.ean, p.cod||'', p.nome, p.cat, p.cx||0,
+      +p.pf, +p.pmc||0, +p.pmpf||0, +(p.descPct/100).toFixed(6),
+      r.precoLiq, r.st, r.final,
+      p.estoque?'Sim':'Não', p.promo?'Sim':'Não',
+      p.mensagem||'', p.sabor||'', p.acucar||''
+    ]);
+  });
+  const ws = XLSX.utils.aoa_to_sheet(data);
+  ws['!cols'] = [{wch:15},{wch:14},{wch:48},{wch:10},{wch:8},{wch:10},{wch:10},{wch:10},{wch:10},{wch:12},{wch:14},{wch:12},{wch:10},{wch:10},{wch:30},{wch:14},{wch:12}];
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Produtos');
+  const today = new Date().toISOString().slice(0,10);
+  XLSX.writeFile(wb, `globopharma_produtos_${today}.xlsx`);
+}
+function downloadTemplate(){
+  const data = [
+    ['EAN','Descrição Produto','PF 17%','PMC 17%','PMPF','Desconto','Estoque','Promoção','Codigo Interno Pharmalog','Caixa Padrão','Mensagem','Sabor','Açúcar'],
+    ['7899620912731','EXEMPLO - ACEBROFILINA XPE ADULTO 50 MG/5 ML 120 ML',22.4,30.88,28.09,0.6420,'Sim','Não','',60,'Maior desconto do mercado','','Não'],
+    ['7899620912748','EXEMPLO - ACEBROFILINA XPE INFANTIL 25 MG/5 ML 120 ML',18.84,25.97,23.31,'63.56%','Não','Sim','',60,'Exclusivo Globo Pharma','Framboesa','Sim'],
+  ];
+  const ws = XLSX.utils.aoa_to_sheet(data);
+  ws['!cols'] = [{wch:15},{wch:48},{wch:10},{wch:10},{wch:10},{wch:12},{wch:10},{wch:10},{wch:18},{wch:8},{wch:30},{wch:14},{wch:12}];
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Produtos');
+  XLSX.writeFile(wb, 'template_globopharma.xlsx');
+}
+
+/* ============ UPLOAD EXCEL ============ */
+function showUpErr(msg){
+  $('up-err-msg').textContent = msg;
+  $('up-err').classList.add('on');
+  $('up-result').innerHTML = '';
+  setTimeout(()=>$('up-err').classList.remove('on'), 6000);
+}
+function normHeader(h){
+  if(!h) return '';
+  return String(h).toLowerCase().trim().replace(/[áàâã]/g,'a').replace(/[éê]/g,'e').replace(/[í]/g,'i').replace(/[óôõ]/g,'o').replace(/[ú]/g,'u').replace(/[ç]/g,'c').replace(/[^a-z0-9% ]/g,'').replace(/\s+/g,' ');
+}
+function findCol(headers, candidates){
+  const norm = headers.map(normHeader);
+  for(const c of candidates){
+    const cn = normHeader(c);
+    const i = norm.findIndex(h => h === cn || h.startsWith(cn) || cn.includes(h));
+    if(i >= 0) return i;
+  }
+  return -1;
+}
+function parseBool(v){
+  if(v === undefined || v === null || v === '') return false;
+  if(typeof v === 'boolean') return v;
+  if(typeof v === 'number') return v !== 0;
+  const s = String(v).trim().toLowerCase();
+  return s === 'sim' || s === 's' || s === 'true' || s === '1' || s === 'x' || s === 'yes';
+}
+function parseNum(v){
+  if(v === undefined || v === null || v === '' || v === '-' || v === ' ') return 0;
+  if(typeof v === 'number') return v;
+  let s = String(v).trim().replace('%','').replace(',','.');
+  if(/\d\.\d{3},\d/.test(String(v))){
+    s = String(v).replace(/\./g,'').replace(',','.');
+  }
+  const n = parseFloat(s);
+  return isNaN(n)?0:n;
+}
+function parseDesc(v){
+  const n = parseNum(v);
+  if(n > 1) return n;
+  return n * 100;
+}
+
+function handleUpload(file){
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      const data = new Uint8Array(e.target.result);
+      const wb = XLSX.read(data, {type:'array'});
+      let chosen = null;
+      for(const name of wb.SheetNames){
+        const aoa = XLSX.utils.sheet_to_json(wb.Sheets[name], {header:1, defval:null});
+        let hr = -1;
+        for(let i=0; i<Math.min(aoa.length, 10); i++){
+          const row = aoa[i]||[];
+          if(row.some(c => normHeader(c) === 'ean')){ hr = i; break; }
+        }
+        if(hr >= 0){ chosen = { name, aoa, hr }; break; }
+      }
+      if(!chosen){ showUpErr('Não foi possível encontrar uma coluna chamada "EAN" na planilha.'); return; }
+      const headers = chosen.aoa[chosen.hr].map(h => h||'');
+      const ixEan   = findCol(headers, ['EAN']);
+      const ixDesc  = findCol(headers, ['Descrição Produto','Descricao Produto','Descricao','Descrição','Produto','Nome']);
+      const ixCat   = findCol(headers, ['Categoria','Cat']);
+      const ixCx    = findCol(headers, ['Caixa Padrão','Caixa Padrao','Cx Padrão','Cx Padrao','Caixa','Cx']);
+      const ixPf    = findCol(headers, ['PF 17%','PF','Preço Fabrica','Preco Fabrica']);
+      const ixPmc   = findCol(headers, ['PMC 17%','PMC','Preço Máximo Consumidor','Preco Maximo Consumidor']);
+      const ixPmpf  = findCol(headers, ['PMPF','Preço Médio Ponderado','PMPF (RS)','PMPF(RS)']);
+      const ixDescP = findCol(headers, ['Desconto','Desc']);
+      const ixEst   = findCol(headers, ['ESTOQUE','Estoque']);
+      const ixPromo = findCol(headers, ['Promoção','Promocao','Promo','Em promoção','Em promocao']);
+      const ixCod   = findCol(headers, ['Codigo Interno Pharmalog','Código Interno Pharmalog','Codigo Pharmalog','Cod Pharmalog','Codigo','Código']);
+      const ixMsg   = findCol(headers, ['Mensagem','Mensagem Diferencial','Diferencial','Destaque','Observação','Observacao']);
+      const ixSabor = findCol(headers, ['Sabor','Flavor']);
+      const ixAcucar = findCol(headers, ['Açúcar','Acucar','Açucar','Sugar']);
+      if(ixEan < 0 || ixPf < 0){ showUpErr('Colunas obrigatórias não encontradas. É necessário pelo menos EAN e PF (PF 17%).'); return; }
+      const rows = chosen.aoa.slice(chosen.hr + 1).filter(r => r && r[ixEan]);
+      if(!rows.length){ showUpErr('Nenhuma linha de produto encontrada.'); return; }
+      const staging = PRODUTOS.map(p => ({...p}));
+      const stagingByEan = new Map(staging.map(p => [String(p.ean), p]));
+      const novos = []; const atualizados = []; const naoEncontrados = [];
+      const eansPlanilha = new Set();
+      rows.forEach(r => {
+        const ean = String(r[ixEan]).trim();
+        eansPlanilha.add(ean);
+        const pf  = parseNum(r[ixPf]);
+        const pmc = ixPmc >= 0 ? parseNum(r[ixPmc]) : 0;
+        const pmpf = ixPmpf >= 0 ? parseNum(r[ixPmpf]) : 0;
+        const descPct = ixDescP >= 0 ? parseDesc(r[ixDescP]) : 0;
+        const promo = ixPromo >= 0 ? parseBool(r[ixPromo]) : false;
+        const estoque = ixEst >= 0 ? parseBool(r[ixEst]) : false;
+        const descName = ixDesc >= 0 ? (r[ixDesc]||'') : '';
+        const cod = ixCod >= 0 ? (r[ixCod]?String(r[ixCod]).replace(/\.0$/,''):'') : '';
+        const cat = ixCat >= 0 ? (r[ixCat]||'Outros') : 'Outros';
+        const cx = ixCx >= 0 ? parseNum(r[ixCx]) : 0;
+        let p = stagingByEan.get(ean);
+        if(p){
+          p.pf = +pf; if(pmc) p.pmc = +pmc; p.pmpf = +pmpf;
+          p.descPct = +descPct; p.promo = promo; p.estoque = estoque;
+          if(cod) p.cod = String(cod);
+          if(descName && String(descName).trim()) p.nome = String(descName).trim();
+          if(ixMsg >= 0 && r[ixMsg]) p.mensagem = String(r[ixMsg]).trim();
+          if(ixSabor >= 0 && r[ixSabor] != null) p.sabor = String(r[ixSabor]).trim();
+          if(ixAcucar >= 0 && r[ixAcucar] != null){ const av = String(r[ixAcucar]).trim().toLowerCase(); p.acucar = (av==='sim'||av==='s'||av==='yes'||av==='1'||av==='true')?'Sim':(av==='não'||av==='nao'||av==='no'||av==='0'||av==='false')?'Não':''; }
+          p.cad = true;
+          const r2 = calcPrices(p.pf, p.pmpf, p.descPct);
+          p.precoLiq = r2.precoLiq; p.st = r2.st; p.final = r2.final;
+          atualizados.push(p);
+        } else if(descName){
+          const r2 = calcPrices(+pf, +pmpf, +descPct);
+          const novo = {
+            id: 'X'+ean.slice(-8), ean: ean, cod: String(cod), nome: String(descName).trim(),
+            cat: cat||'Outros', grupo: cat||'Outros', icon:'💊',
+            cx: +cx, pmc: +pmc, pf: +pf, pmpf: +pmpf,
+            descPct: +descPct, precoLiq: r2.precoLiq, st: r2.st, final: r2.final,
+            estoque: estoque, cad: true, promo: promo,
+            mensagem: (ixMsg >= 0 && r[ixMsg]) ? String(r[ixMsg]).trim() : '',
+            sabor: (ixSabor >= 0 && r[ixSabor]) ? String(r[ixSabor]).trim() : '',
+            acucar: (ixAcucar >= 0 && r[ixAcucar]) ? (()=>{ const av = String(r[ixAcucar]).trim().toLowerCase(); return (av==='sim'||av==='s'||av==='yes'||av==='1'||av==='true')?'Sim':(av==='não'||av==='nao'||av==='no'||av==='0'||av==='false')?'Não':''; })() : ''
+          };
+          staging.push(novo); stagingByEan.set(ean, novo); novos.push(novo);
+        } else { naoEncontrados.push(ean); }
+      });
+      uploadStaging = staging;
+      uploadAusentes = staging.filter(p => !eansPlanilha.has(String(p.ean)));
+      const html = `
+        <div class="preview-box">
+          <b>✓ Planilha analisada com sucesso</b><br>
+          <b>${atualizados.length}</b> produtos a atualizar · <b>${novos.length}</b> novos · ${naoEncontrados.length>0?`<b>${naoEncontrados.length}</b> sem descrição/ignorados`:'0 ignorados'}<br>
+          <small style="color:var(--tx2)">Aba lida: <code>${chosen.name}</code></small>
+        </div>
+        ${uploadAusentes.length ? `<div class="alert a-err on" style="align-items:flex-start;flex-direction:column;gap:6px">
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+            <input type="checkbox" id="up-remover" checked/>
+            <span>Remover do catálogo os <b>${uploadAusentes.length}</b> produtos que não estão nesta planilha</span>
+          </label>
+          <small style="font-weight:600;color:var(--tx2)">Ex.: ${uploadAusentes.slice(0,4).map(p=>p.nome).join(' · ')}${uploadAusentes.length>4?' · …':''}</small>
+        </div>` : ''}
+        <div class="actions">
+          <button class="btn btn-ghost" onclick="uploadStaging=null;uploadAusentes=[];document.getElementById('up-result').innerHTML='';document.getElementById('upFile').value='';">Cancelar</button>
+          <button class="btn btn-or" onclick="confirmarUpload(${atualizados.length},${novos.length})">Aplicar ao catálogo →</button>
+        </div>`;
+      $('up-result').innerHTML = html;
+    } catch(err){ console.error(err); showUpErr('Erro ao ler planilha: '+err.message); }
+  };
+  reader.readAsArrayBuffer(file);
+}
+function confirmarUpload(upd, novos){
+  const remover = $('up-remover')?.checked ? uploadAusentes.length : 0;
+  $('confirmContent').innerHTML = `
+    <p><b>${upd}</b> produtos serão atualizados<br><b>${novos}</b> produtos novos serão adicionados${remover?`<br><b>${remover}</b> produtos fora da planilha serão removidos`:''}</p>
+    <p>Esta ação substitui o catálogo atual. A loja passará a usar os novos valores imediatamente.</p>`;
+  $('confirmModal').classList.add('on');
+}
+function closeConfirm(){ $('confirmModal').classList.remove('on'); }
+function aplicarUpload(){
+  if(!uploadStaging) return;
+  if($('up-remover')?.checked && uploadAusentes.length){
+    const fora = new Set(uploadAusentes.map(p => String(p.ean)));
+    uploadStaging = uploadStaging.filter(p => !fora.has(String(p.ean)));
+  }
+  PRODUTOS = uploadStaging;
+  saveProdutos();
+  uploadStaging = null;
+  uploadAusentes = [];
+  closeConfirm();
+  $('up-result').innerHTML = '<div class="preview-box"><b>✅ Catálogo atualizado!</b> A loja já reflete os novos preços.</div>';
+  $('upFile').value = '';
+  refreshAll();
+  setTimeout(()=>goTab('produtos'), 800);
+}
+(function(){
+  const z = $('upZone'); if(!z) return;
+  z.addEventListener('dragover', e => { e.preventDefault(); z.classList.add('drag'); });
+  z.addEventListener('dragleave', () => z.classList.remove('drag'));
+  z.addEventListener('drop', e => { e.preventDefault(); z.classList.remove('drag'); if(e.dataTransfer.files.length) handleUpload(e.dataTransfer.files[0]); });
+})();
+
+/* ============ ACESSOS ============ */
+let _acessosCache = [];
+async function loadAcessosFromServer(){
+  try {
+    const resp = await fetch('/api/acessos');
+    if(resp.ok) _acessosCache = await resp.json();
+  } catch(e){}
+}
+function getAcessos(){
+  return _acessosCache;
+}
+function refreshAcessosDist(){
+  const acs = getAcessos();
+  const dists = Array.from(new Set(acs.map(a => a.distribuidora))).sort();
+  const sel = $('log-dist'); if(!sel) return;
+  const current = sel.value;
+  sel.innerHTML = '<option value="">Todas distribuidoras</option>' + dists.map(d => `<option value="${d}">${d}</option>`).join('');
+  sel.value = current;
+}
+function renderAcessos(){
+  const acs = getAcessos().slice().sort((a,b) => b.ts - a.ts);
+  const dist = $('log-dist')?.value || '';
+  const periodo = parseInt($('log-periodo')?.value || '30');
+  const q = ($('log-search')?.value||'').toLowerCase().trim();
+  const agora = Date.now();
+  let limite = agora - periodo*24*60*60*1000;
+  if(periodo === 1){ const d = new Date(); d.setHours(0,0,0,0); limite = d.getTime(); }
+  const filtered = acs.filter(a => {
+    if(a.ts < limite) return false;
+    if(dist && a.distribuidora !== dist) return false;
+    if(q && !((a.cnpj||'')+' '+(a.fantasia||'')+' '+(a.razao||'')+' '+(a.comprador||'')+' '+(a.nome||'')+' '+(a.telefone||'')+' '+(a.email||'')).toLowerCase().includes(q)) return false;
+    return true;
+  });
+  const tbody = $('log-tbody');
+  if(tbody){
+    if(!filtered.length){ tbody.innerHTML = '<tr><td colspan="7" class="empty-tbl">Nenhum acesso registrado no período</td></tr>'; }
+    else {
+      tbody.innerHTML = filtered.map(a => `<tr>
+        <td>${a.data||new Date(a.ts).toLocaleString('pt-BR')}</td>
+        <td><b>${a.distribuidora}</b></td>
+        <td style="font-family:monospace">${a.cnpj||a.regiao||'-'}</td>
+        <td>${a.fantasia||a.nome||'-'}</td>
+        <td>${a.comprador||'-'}</td>
+        <td style="font-family:monospace">${a.telefone||'-'}</td>
+        <td>${a.email||'-'}</td>
+      </tr>`).join('');
+    }
+  }
+  if($('a-tot')) $('a-tot').textContent = acs.length;
+  if($('a-uniq')) $('a-uniq').textContent = new Set(acs.map(a => (a.cnpj||a.telefone||a.nome||'').toLowerCase())).size;
+  if($('a-hoje')){ const h = new Date(); h.setHours(0,0,0,0); $('a-hoje').textContent = acs.filter(a => a.ts >= h.getTime()).length; }
+  if($('a-7d')) $('a-7d').textContent = acs.filter(a => a.ts >= (Date.now()-7*24*60*60*1000)).length;
+}
+function exportAcessos(){
+  const acs = getAcessos().slice().sort((a,b) => b.ts - a.ts);
+  if(!acs.length){ alert('Sem acessos para exportar.'); return; }
+  const data = [['Data/Hora','Distribuidora','CNPJ','Nome Fantasia','Razão Social','Comprador','Telefone','Email','Associativismo']];
+  acs.forEach(a => data.push([a.data||new Date(a.ts).toLocaleString('pt-BR'), a.distribuidora, a.cnpj||'', a.fantasia||a.nome||'', a.razao||'', a.comprador||'', a.telefone||'', a.email||'', a.associativismo||'']));
+  const ws = XLSX.utils.aoa_to_sheet(data);
+  ws['!cols'] = [{wch:20},{wch:18},{wch:20},{wch:25},{wch:30},{wch:25},{wch:18},{wch:30},{wch:20}];
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Acessos');
+  XLSX.writeFile(wb, `globopharma_acessos_${new Date().toISOString().slice(0,10)}.xlsx`);
+}
+function limparAcessos(){
+  if(!confirm('Tem certeza? Todos os registros de acesso serão removidos.')) return;
+  fetch('/api/acessos', { method: 'DELETE' }).then(() => {
+    _acessosCache = [];
+    refreshAcessosDist(); renderAcessos(); refreshDashboard();
+  }).catch(e => console.warn('Erro ao limpar acessos:', e));
+}
+
+/* ============ PEDIDOS ============ */
+let _pedidosCache = [];
+async function loadPedidosFromServer(){
+  try {
+    const resp = await fetch('/api/pedidos');
+    if(resp.ok) _pedidosCache = await resp.json();
+  } catch(e){}
+}
+function getPedidos(){ return _pedidosCache; }
+function savePedidos(arr){
+  _pedidosCache = arr;
+}
+
+function renderPedidos(){
+  const list = getPedidos().slice().sort((a,b)=>b.ts-a.ts);
+  const q = ($('ped-search')?.value||'').toLowerCase().trim();
+  const f = $('ped-filter')?.value || '';
+  const agora = Date.now();
+  const hojeIni = (() => { const d = new Date(); d.setHours(0,0,0,0); return d.getTime(); })();
+  const filtered = list.filter(p => {
+    if(f==='hoje' && p.ts < hojeIni) return false;
+    if(f==='7' && p.ts < agora - 7*86400000) return false;
+    if(f==='30' && p.ts < agora - 30*86400000) return false;
+    if(f==='ok' && !p.emailEnviado) return false;
+    if(f==='fail' && p.emailEnviado) return false;
+    if(!q) return true;
+    return ((p.id||'')+' '+(p.cliente?.razao||'')+' '+(p.cliente?.fantasia||'')+' '+(p.cliente?.cnpj||'')+' '+(p.cliente?.comprador||'')+' '+(p.cliente?.email||'')+' '+(p.representante?.distribuidora||'')).toLowerCase().includes(q);
+  });
+  const tbody = $('ped-tbody');
+  if(tbody){
+    if(!filtered.length){ tbody.innerHTML = '<tr><td colspan="10" class="empty-tbl">Nenhum pedido encontrado</td></tr>'; }
+    else {
+      tbody.innerHTML = filtered.map(p => `<tr>
+        <td><b>${p.id}</b></td>
+        <td>${p.data}</td>
+        <td><b>${p.cliente?.fantasia||'-'}</b><br><span style="font-size:10.5px;color:var(--tx2)">${p.cliente?.razao||''}</span></td>
+        <td style="font-family:monospace;font-size:11.5px">${p.cliente?.cnpj||'-'}</td>
+        <td>${p.cliente?.comprador||'-'}</td>
+        <td>${p.representante?.distribuidora||'-'}</td>
+        <td class="num">${p.totais?.qtdItens||0}</td>
+        <td class="num" style="font-weight:800;color:var(--or-d)">${fmtBR(p.totais?.total||0)}</td>
+        <td class="center">${p.emailEnviado?'<span class="stk-tag in">✓ Enviado</span>':'<span class="stk-tag out">⏳ Pendente</span>'}</td>
+        <td class="center">
+          <button class="btn btn-ghost" style="padding:5px 10px;font-size:11px" onclick="abrirPedDetail('${p.id}')">👁️ Ver</button>
+          <button class="btn btn-bl" style="padding:5px 10px;font-size:11px" onclick="downloadTxtPedido('${p.id}', false)">📄 TXT</button>
+        </td>
+      </tr>`).join('');
+    }
+  }
+  if($('kp-tot')) $('kp-tot').textContent = list.length;
+  if($('kp-hoje')) $('kp-hoje').textContent = list.filter(p => p.ts >= hojeIni).length;
+  if($('kp-7d')) $('kp-7d').textContent = list.filter(p => p.ts >= agora-7*86400000).length;
+  if($('kp-val')){ const last30 = list.filter(p => p.ts >= agora-30*86400000); const sum30 = last30.reduce((s,p)=>s+(p.totais?.total||0),0); $('kp-val').textContent = fmtBR(sum30); }
+}
+
+function abrirPedDetail(id){
+  const p = getPedidos().find(x=>x.id===id);
+  if(!p) return;
+  $('pd-title').innerHTML = `Pedido <b style="color:var(--or)">${p.id}</b> · ${p.data}`;
+  let itensHtml = '<div class="tbl-wrap" style="margin-top:8px"><table class="tbl"><thead><tr><th>EAN</th><th>Produto</th><th class="num">Qtd</th><th class="num">Líq</th><th class="num">ST</th><th class="num">Final</th><th class="num">Subtotal</th></tr></thead><tbody>';
+  p.itens.forEach(i => {
+    itensHtml += `<tr ${i.promo?'class="promo-row"':''}><td style="font-family:monospace;font-size:11px">${i.ean||'-'}</td><td>${i.promo?'🔥 ':''}${i.icon} ${i.nome}<br><span style="font-size:10px;color:var(--tx2)">SAP ${i.id}${i.cod?' · Cód '+i.cod:''}</span></td><td class="num">${i.qty}</td><td class="num">${fmtBR(i.precoLiq)}</td><td class="num">${fmtBR(i.st)}</td><td class="num">${fmtBR(i.final)}</td><td class="num" style="font-weight:800">${fmtBR(i.subtotal)}</td></tr>`;
+  });
+  itensHtml += `<tr><td colspan="6" style="text-align:right;font-weight:800">Subtotal Líquido</td><td class="num" style="font-weight:800">${fmtBR(p.totais.liq)}</td></tr>`;
+  if(p.totais.st>0) itensHtml += `<tr><td colspan="6" style="text-align:right;font-weight:800">ST Total</td><td class="num" style="font-weight:800">${fmtBR(p.totais.st)}</td></tr>`;
+  itensHtml += `<tr><td colspan="6" style="text-align:right;font-weight:900;color:var(--or)">TOTAL</td><td class="num" style="font-weight:900;color:var(--or)">${fmtBR(p.totais.total)}</td></tr></tbody></table></div>`;
+  $('pd-body').innerHTML = `
+    <div class="cards-grid" style="grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
+      <div class="panel" style="margin:0;padding:14px">
+        <h3 style="margin-bottom:8px">🏥 Cliente</h3>
+        <div style="font-size:13px;line-height:1.7">
+          <b>${p.cliente.fantasia}</b><br>
+          <span style="color:var(--tx2)">${p.cliente.razao}</span><br>
+          <b>CNPJ:</b> ${p.cliente.cnpj}<br>
+          <b>Comprador:</b> ${p.cliente.comprador}<br>
+          <b>Telefone:</b> ${p.cliente.telefone}<br>
+          <b>Email:</b> <a href="mailto:${p.cliente.email}" style="color:var(--or)">${p.cliente.email}</a>
+          ${p.cliente.associativismo?`<br><b>Associativismo:</b> ${p.cliente.associativismo}`:''}
+        </div>
+      </div>
+      <div class="panel" style="margin:0;padding:14px">
+        <h3 style="margin-bottom:8px">📍 Representante</h3>
+        <div style="font-size:13px;line-height:1.7">
+          <b>${p.representante.distribuidora}</b><br>
+          <b>Nome:</b> ${p.representante.nome}<br>
+          <b>Região:</b> ${p.representante.regiao}<br>
+          <b>Telefone:</b> ${p.representante.telefone}<br>
+          <b>Email destino:</b> <span style="color:var(--tx2)">${p.emailDestino||'-'}</span><br>
+          <b>Status:</b> ${p.emailEnviado?'<span class="stk-tag in">✓ Email enviado</span>':'<span class="stk-tag out">⏳ Email pendente</span>'}
+        </div>
+      </div>
+    </div>
+    <h3 style="font-family:Syne;font-size:15px;margin-bottom:6px">📦 Itens (${p.totais.qtdItens})</h3>
+    ${itensHtml}
+    <div style="margin-top:18px;display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn btn-bl" onclick="downloadTxtPedido('${p.id}', false)">📄 Baixar TXT (mínimo)</button>
+      <button class="btn btn-ghost" onclick="downloadTxtPedido('${p.id}', true)">📄 Baixar TXT (completo)</button>
+      <button class="btn btn-gr" onclick="reenviarEmailPedido('${p.id}')">📧 Reenviar email</button>
+      <button class="btn btn-ghost" onclick="copiarTxt('${p.id}')">📋 Copiar TXT</button>
+      <button class="btn btn-danger" onclick="excluirPedido('${p.id}')">🗑️ Excluir</button>
+    </div>`;
+  $('ped-detail-ov').classList.add('on');
+}
+function closePedDetail(){ $('ped-detail-ov').classList.remove('on'); }
+
+function gerarTxtAdmin(p, completo){
+  const cnpj = (p.cliente.cnpj||'').replace(/\D/g,'');
+  if(!completo){
+    let t = `1;${cnpj};\n`;
+    p.itens.forEach(i => { t += `2;${String(i.ean||'').replace(/\D/g,'')};${i.qty}\n`; });
+    return t;
+  }
+  let t = `1;${cnpj};${p.itens.length}.0\n`;
+  p.itens.forEach(i => {
+    t += `2;${String(i.ean||'').replace(/\D/g,'')};${i.qty};${i.cod||i.id||''};${String(i.nome||'').replace(/;/g,',')};GLOBO PHARMA;${(+i.precoLiq).toFixed(2)}\n`;
+  });
+  return t;
+}
+function downloadTxtPedido(id, completo){
+  const p = getPedidos().find(x=>x.id===id);
+  if(!p) return;
+  const txt = completo ? (p.txtCompleto || gerarTxtAdmin(p, true)) : (p.txt || gerarTxtAdmin(p, false));
+  const blob = new Blob([txt], {type:'text/plain;charset=utf-8'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `${p.id}${completo?'_completo':''}.txt`;
+  document.body.appendChild(a); a.click(); a.remove();
+  URL.revokeObjectURL(a.href);
+}
+function copiarTxt(id){
+  const p = getPedidos().find(x=>x.id===id); if(!p) return;
+  const txt = p.txt || gerarTxtAdmin(p, false);
+  navigator.clipboard.writeText(txt).then(()=>alert('✓ TXT copiado para a área de transferência!')).catch(()=>{
+    const ta = document.createElement('textarea'); ta.value = txt; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove(); alert('✓ TXT copiado!');
+  });
+}
+async function reenviarEmailPedido(id){
+  const arr = getPedidos();
+  const i = arr.findIndex(p=>p.id===id);
+  if(i<0) return;
+  const p = arr[i];
+  try {
+    const c = p.cliente;
+    const t = p.totais;
+    const itensTxt = (p.itens||[]).map(it =>
+      `${it.icon||''} ${it.nome} | SAP ${it.id} | EAN ${it.ean||'-'} | Qtd ${it.qty} × ${fmtBR(it.final)} = ${fmtBR(it.subtotal)}`
+    ).join('\n');
+
+    const emailPayload = {
+      'Pedido': p.id,
+      'Data': p.data,
+      'Razão Social': c.razao,
+      'Nome Fantasia': c.fantasia,
+      'CNPJ': c.cnpj,
+      'Comprador': c.comprador,
+      'Telefone': c.telefone,
+      'Email Cliente': c.email || '-',
+      'Associativismo': c.associativismo || '-',
+      'Distribuidora': (p.representante||{}).distribuidora || '-',
+      'Qtd Itens': String(t.qtdItens),
+      'Total Líquido': fmtBR(t.liq),
+      'ST Total': fmtBR(t.st),
+      'Total Geral': fmtBR(t.total),
+      'Itens': itensTxt,
+      'Layout TXT': p.txt || gerarTxtAdmin(p,false),
+      'Observação': 'REENVIO - Prazo a ser alinhado com o Distribuidor.'
+    };
+
+    const emailDest = p.emailDestino || await getEmailDestinoAdmin();
+
+    const r = await fetch('/api/enviar-email', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        emailDestino: emailDest,
+        subject: `[Reenvio] Pedido ${p.id} - ${c.fantasia} - ${fmtBR(t.total)}`,
+        payload: emailPayload,
+        pedidoId: p.id
+      })
+    });
+    if(!r.ok){
+      const errData = await r.json().catch(()=>({}));
+      throw new Error(errData.error || 'HTTP ' + r.status);
+    }
+
+    arr[i].emailEnviado = true;
+    savePedidos(arr);
+    alert('✓ Email reenviado com sucesso!');
+    renderPedidos(); closePedDetail();
+  } catch(e){ alert('❌ Falha ao reenviar: ' + e.message); }
+}
+function excluirPedido(id){
+  if(!confirm('Excluir este pedido permanentemente?')) return;
+  fetch('/api/pedidos?id=' + encodeURIComponent(id), { method: 'DELETE' }).then(() => {
+    _pedidosCache = _pedidosCache.filter(p => p.id !== id);
+    closePedDetail(); renderPedidos(); refreshDashboard();
+  }).catch(e => console.warn('Erro ao excluir pedido:', e));
+}
+function resetPedidos(){
+  if(!confirm('Apagar TODOS os pedidos? Esta ação é irreversível.')) return;
+  fetch('/api/pedidos?id=__ALL__', { method: 'DELETE' }).then(() => {
+    _pedidosCache = [];
+    renderPedidos(); refreshDashboard();
+    alert('✓ Todos os pedidos foram removidos.');
+  }).catch(e => console.warn('Erro ao resetar pedidos:', e));
+}
+function exportarTodosPedidos(){
+  const list = getPedidos();
+  if(!list.length){ alert('Nenhum pedido para exportar.'); return; }
+  const resumo = [['Nº Pedido','Data','Razão Social','Nome Fantasia','CNPJ','Comprador','Telefone','Email','Associativismo','Distribuidora','Representante','Região','Itens','Líquido','ST','Total','Email Enviado']];
+  const itens = [['Nº Pedido','EAN','SAP','Cód Pharmalog','Produto','Categoria','Qtd','PMC','PF','Desc %','Preço Líq','ST/un','Final/un','Subtotal','Promo','Estoque']];
+  list.forEach(p => {
+    resumo.push([p.id, p.data, p.cliente.razao, p.cliente.fantasia, p.cliente.cnpj, p.cliente.comprador, p.cliente.telefone, p.cliente.email, p.cliente.associativismo||'', p.representante.distribuidora, p.representante.nome, p.representante.regiao, p.totais.qtdItens, p.totais.liq, p.totais.st, p.totais.total, p.emailEnviado?'Sim':'Não']);
+    p.itens.forEach(i => itens.push([p.id, i.ean, i.id, i.cod||'', i.nome, i.cat, i.qty, i.pmc, i.pf, i.descPct, i.precoLiq, i.st, i.final, i.subtotal, i.promo?'Sim':'Não', i.estoque?'Sim':'Não']));
+  });
+  const wb = XLSX.utils.book_new();
+  const s1 = XLSX.utils.aoa_to_sheet(resumo);
+  s1['!cols'] = [{wch:18},{wch:18},{wch:30},{wch:24},{wch:18},{wch:24},{wch:16},{wch:26},{wch:16},{wch:14},{wch:24},{wch:18},{wch:8},{wch:12},{wch:10},{wch:12},{wch:12}];
+  const s2 = XLSX.utils.aoa_to_sheet(itens);
+  s2['!cols'] = [{wch:18},{wch:16},{wch:10},{wch:14},{wch:36},{wch:12},{wch:6},{wch:10},{wch:10},{wch:8},{wch:10},{wch:10},{wch:10},{wch:12},{wch:8},{wch:8}];
+  XLSX.utils.book_append_sheet(wb, s1, 'Pedidos');
+  XLSX.utils.book_append_sheet(wb, s2, 'Itens');
+  XLSX.writeFile(wb, `globopharma_pedidos_${new Date().toISOString().slice(0,10)}.xlsx`);
+}
+
+/* ============ EMAIL CONFIG ============ */
+async function getEmailDestinoAdmin(){
+  try {
+    const resp = await fetch('/api/config?chave=email_destino');
+    if(resp.ok){
+      const data = await resp.json();
+      if(data && data.valor) return data.valor;
+    }
+  } catch(e){}
+  return 'rodrigo.demarco@globopharma.com.br';
+}
+function alterarEmail(){
+  const e = ($('cfg-email').value||'').trim();
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)) return alert('Email inválido.');
+  fetch('/api/config', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ chave: 'email_destino', valor: e })
+  }).catch(err => console.warn('Erro ao salvar email:', err));
+  $('cfg-email-ok').classList.add('on');
+  setTimeout(()=>$('cfg-email-ok').classList.remove('on'), 2500);
+}
+
+/* ============ PEDIDO MINIMO ============ */
+function alterarPedidoMinimo(){
+  const v = ($('cfg-pedido-min').value||'').trim();
+  const num = parseFloat(v);
+  if(isNaN(num) || num < 0) return alert('Informe um valor válido (ex.: 1000).');
+  fetch('/api/config', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ chave: 'pedido_minimo', valor: String(num) })
+  }).catch(err => console.warn('Erro ao salvar pedido mínimo:', err));
+  $('cfg-min-ok').classList.add('on');
+  setTimeout(()=>$('cfg-min-ok').classList.remove('on'), 2500);
+}
+
+/* ============ LGPD CONSENTIMENTOS ============ */
+let CONSENTIMENTOS = [];
+async function loadConsentimentosFromServer(){
+  try {
+    const resp = await fetch('/api/consentimentos');
+    if(resp.ok){ CONSENTIMENTOS = await resp.json(); }
+  } catch(e){ console.error('Erro ao carregar consentimentos', e); }
+}
+function renderConsentimentos(){
+  const periodo = $('lgpd-periodo').value;
+  const search = ($('lgpd-search').value||'').toLowerCase();
+  const now = Date.now();
+  let filtered = CONSENTIMENTOS;
+  if(periodo){
+    const dias = parseInt(periodo);
+    const limite = now - dias*24*60*60*1000;
+    filtered = filtered.filter(c => new Date(c.createdAt).getTime() >= limite);
+  }
+  if(search){
+    filtered = filtered.filter(c =>
+      (c.cnpj||'').toLowerCase().includes(search) ||
+      (c.razao||'').toLowerCase().includes(search) ||
+      (c.fantasia||'').toLowerCase().includes(search) ||
+      (c.comprador||'').toLowerCase().includes(search) ||
+      (c.email||'').toLowerCase().includes(search)
+    );
+  }
+  const hoje = new Date(); hoje.setHours(0,0,0,0);
+  const h7 = new Date(hoje); h7.setDate(h7.getDate()-7);
+  let totHoje=0, tot7d=0;
+  const cnpjSet = new Set();
+  CONSENTIMENTOS.forEach(c => {
+    const d = new Date(c.createdAt);
+    if(d >= hoje) totHoje++;
+    if(d >= h7) tot7d++;
+    cnpjSet.add(c.cnpj);
+  });
+  $('lgpd-tot').textContent = CONSENTIMENTOS.length;
+  $('lgpd-hoje').textContent = totHoje;
+  $('lgpd-7d').textContent = tot7d;
+  $('lgpd-uniq').textContent = cnpjSet.size;
+  const tbody = $('lgpd-tbody');
+  if(!filtered.length){
+    tbody.innerHTML = '<tr><td colspan="9" class="empty-tbl">Nenhum consentimento encontrado</td></tr>';
+    return;
+  }
+  tbody.innerHTML = filtered.map(c => {
+    const dt = new Date(c.createdAt);
+    const dataStr = dt.toLocaleString('pt-BR');
+    return `<tr>
+      <td>${dataStr}</td>
+      <td>${c.cnpj||''}</td>
+      <td>${c.razao||''}</td>
+      <td>${c.fantasia||''}</td>
+      <td>${c.comprador||''}</td>
+      <td>${c.email||''}</td>
+      <td>${c.telefone||''}</td>
+      <td>${c.versaoTermos||''}</td>
+      <td class="center"><span style="background:${c.aceite?'var(--gr-l)':'var(--re-l)'};color:${c.aceite?'var(--gr)':'var(--re)'};padding:3px 10px;border-radius:50px;font-size:11px;font-weight:800">${c.aceite?'Sim':'Nao'}</span></td>
+    </tr>`;
+  }).join('');
+}
+function exportConsentimentos(){
+  if(!CONSENTIMENTOS.length) return alert('Nenhum consentimento para exportar.');
+  const header = ['Data/Hora','CNPJ','Razao Social','Nome Fantasia','Comprador','Email','Telefone','Versao Termos','Aceite'];
+  const rows = CONSENTIMENTOS.map(c => [
+    new Date(c.createdAt).toLocaleString('pt-BR'),
+    c.cnpj||'', c.razao||'', c.fantasia||'', c.comprador||'', c.email||'', c.telefone||'',
+    c.versaoTermos||'', c.aceite?'Sim':'Nao'
+  ]);
+  let csv = '﻿' + header.join(';') + '\n' + rows.map(r=>r.join(';')).join('\n');
+  const blob = new Blob([csv], {type:'text/csv;charset=utf-8'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'consentimentos_lgpd_'+new Date().toISOString().slice(0,10)+'.csv';
+  a.click();
+}
+
+/* ============ CLIENTES ============ */
+let CLIENTES = [];
+let USUARIOS = [];
+let _usrPwPk = null;
+let _cliHistCnpj = null;
+
+async function loadClientesFromServer(){
+  try {
+    const resp = await fetch('/api/clientes');
+    if(resp.ok){ CLIENTES = await resp.json(); }
+  } catch(e){ console.warn('Erro ao carregar clientes:', e); }
+}
+
+function renderClientes(){
+  const q = ($('cli-search').value||'').toLowerCase().trim();
+  const filtered = CLIENTES.filter(c => {
+    if(!q) return true;
+    return (c.razao+' '+c.fantasia+' '+c.cnpj+' '+(c.comprador||'')+' '+(c.email||'')+' '+(c.telefone||'')+' '+(c.associativismo||'')+' '+(c.cpf||'')).toLowerCase().includes(q);
+  });
+
+  let totalVal = 0, totalPeds = 0;
+  CLIENTES.forEach(c => { totalVal += c.totalValor||0; totalPeds += c.totalPedidos||0; });
+  $('kc-tot').textContent = CLIENTES.length;
+  $('kc-val').textContent = fmtBR(totalVal);
+  $('kc-peds').textContent = totalPeds;
+
+  const tbody = $('cli-tbody');
+  if(!filtered.length){ tbody.innerHTML = '<tr><td colspan="13" class="empty-tbl">Nenhum cliente encontrado</td></tr>'; return; }
+  let html = '';
+  filtered.forEach(c => {
+    const lastDate = c.ultimoPedido ? new Date(c.ultimoPedido).toLocaleDateString('pt-BR') : '—';
+    html += `<tr>
+      <td style="font-weight:700;font-size:12px">${c.razao||'—'}</td>
+      <td>${c.fantasia||'—'}</td>
+      <td style="font-family:monospace;font-size:11px">${c.cnpj||'—'}</td>
+      <td>${c.comprador||'—'}</td>
+      <td style="font-family:monospace;font-size:11px">${c.cpf||'—'}</td>
+      <td style="font-size:11.5px">${c.dataNascimento||'—'}</td>
+      <td>${c.telefone||'—'}</td>
+      <td style="font-size:11px">${c.email||'—'}</td>
+      <td>${c.associativismo||'—'}</td>
+      <td class="num" style="font-weight:800">${c.totalPedidos||0}</td>
+      <td class="num" style="font-weight:800;color:var(--gr)">${fmtBR(c.totalValor||0)}</td>
+      <td>${lastDate}</td>
+      <td class="center" style="white-space:nowrap">
+        <button class="btn btn-bl" style="padding:4px 10px;font-size:11px" onclick="verHistorico('${(c.cnpj||'').replace(/'/g,"\\'")}')">📋 Histórico</button>
+        <button class="btn btn-danger" style="padding:4px 10px;font-size:11px;margin-left:4px" onclick="excluirCliente('${(c.cnpj||'').replace(/'/g,"\\'")}')">🗑️ Excluir</button>
+      </td>
+    </tr>`;
+  });
+  tbody.innerHTML = html;
+}
+
+async function syncClientes(){
+  const btn = event.target;
+  btn.disabled = true; btn.textContent = '⏳ Sincronizando...';
+  try {
+    const resp = await fetch('/api/clientes', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'sync' })
+    });
+    const data = await resp.json();
+    await loadClientesFromServer();
+    renderClientes();
+    alert('✓ ' + (data.synced||0) + ' clientes sincronizados com sucesso!');
+  } catch(e){
+    alert('Erro ao sincronizar: ' + e.message);
+  }
+  btn.disabled = false; btn.textContent = '🔄 Sincronizar com pedidos';
+}
+
+async function verHistorico(cnpj){
+  $('cli-hist-title').textContent = 'Histórico de Compras';
+  $('cli-hist-sub').textContent = 'Carregando...';
+  $('cli-hist-body').innerHTML = '';
+  $('cli-hist-ov').classList.add('on');
+  _cliHistCnpj = cnpj;
+
+  try {
+    const resp = await fetch('/api/clientes', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'historico', cnpj })
+    });
+    const data = await resp.json();
+    const cli = CLIENTES.find(c => c.cnpj === cnpj);
+    $('cli-hist-title').textContent = '📋 ' + (cli ? cli.fantasia || cli.razao : cnpj);
+    $('cli-hist-sub').textContent = 'CNPJ: ' + cnpj + ' · ' + (data.totalPedidos||0) + ' pedidos no total';
+
+    const meses = data.meses || {};
+    const keys = Object.keys(meses).sort().reverse();
+    if(!keys.length){
+      $('cli-hist-body').innerHTML = '<div style="padding:20px;text-align:center;color:var(--tx2)">Nenhum histórico de compras encontrado.</div>';
+      return;
+    }
+
+    let html = '';
+    keys.forEach(mesKey => {
+      const m = meses[mesKey];
+      const [year, month] = mesKey.split('-');
+      const mesNome = ['','Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'][parseInt(month)] + '/' + year;
+      html += `<div class="panel" style="margin-bottom:12px">
+        <h3 style="font-size:14px">📅 ${mesNome} — ${m.pedidos} pedido(s) — ${fmtBR(m.valor)}</h3>
+        <div class="tbl-wrap" style="max-height:300px">
+          <table class="tbl" style="min-width:600px">
+            <thead><tr><th>Data</th><th>Pedido</th><th>Produto</th><th class="num">Qtd</th><th class="num">Líquido</th><th class="num">ST</th><th class="num">Subtotal</th></tr></thead>
+            <tbody>`;
+      (m.itens||[]).forEach(it => {
+        html += `<tr>
+          <td style="font-size:11px">${it.data||'—'}</td>
+          <td style="font-family:monospace;font-size:11px">${it.pedidoId||'—'}</td>
+          <td style="font-size:12px">${it.nome||'—'}</td>
+          <td class="num">${it.qty||0}</td>
+          <td class="num">${fmtBR(it.precoLiq||0)}</td>
+          <td class="num">${fmtBR(it.st||0)}</td>
+          <td class="num" style="font-weight:700">${fmtBR(it.subtotal||0)}</td>
+        </tr>`;
+      });
+      html += `</tbody></table></div></div>`;
+    });
+    $('cli-hist-body').innerHTML = html;
+  } catch(e){
+    $('cli-hist-body').innerHTML = '<div style="padding:20px;text-align:center;color:var(--re)">Erro ao carregar histórico: '+e.message+'</div>';
+  }
+}
+
+function closeCliHist(){ $('cli-hist-ov').classList.remove('on'); _cliHistCnpj = null; }
+
+async function excluirCliente(cnpj){
+  const cli = CLIENTES.find(c => c.cnpj === cnpj);
+  const nome = cli ? (cli.fantasia || cli.razao || cnpj) : cnpj;
+  if(!confirm('Excluir o cliente "' + nome + '" permanentemente?')) return;
+  try {
+    const resp = await fetch('/api/clientes?cnpj=' + encodeURIComponent(cnpj), { method: 'DELETE' });
+    if(!resp.ok) throw new Error('Erro ao excluir');
+    CLIENTES = CLIENTES.filter(c => c.cnpj !== cnpj);
+    renderClientes();
+  } catch(e){
+    alert('Erro ao excluir cliente: ' + e.message);
+  }
+}
+
+function exportarClientesExcel(){
+  if(!CLIENTES.length) return alert('Nenhum cliente para exportar.');
+  const rows = [['Razão Social','Nome Fantasia','CNPJ','Comprador','CPF','Data de Nascimento','Telefone/WhatsApp','Email','Associativismo','Total Pedidos','Valor Total (R$)','Último Pedido']];
+  CLIENTES.forEach(c => {
+    rows.push([
+      c.razao||'', c.fantasia||'', c.cnpj||'', c.comprador||'', c.cpf||'', c.dataNascimento||'',
+      c.telefone||'', c.email||'', c.associativismo||'',
+      c.totalPedidos||0, Number(c.totalValor||0).toFixed(2),
+      c.ultimoPedido ? new Date(c.ultimoPedido).toLocaleDateString('pt-BR') : ''
+    ]);
+  });
+  const ws = XLSX.utils.aoa_to_sheet(rows);
+  ws['!cols'] = [{wch:30},{wch:25},{wch:20},{wch:22},{wch:16},{wch:16},{wch:18},{wch:28},{wch:20},{wch:12},{wch:14},{wch:14}];
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Clientes');
+  XLSX.writeFile(wb, `globopharma_clientes_${new Date().toISOString().slice(0,10)}.xlsx`);
+}
+
+async function exportarHistoricoExcel(){
+  if(!_cliHistCnpj) return;
+  try {
+    const resp = await fetch('/api/clientes', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'historico', cnpj: _cliHistCnpj })
+    });
+    const data = await resp.json();
+    const cli = CLIENTES.find(c => c.cnpj === _cliHistCnpj);
+    const nome = cli ? (cli.fantasia || cli.razao) : _cliHistCnpj;
+    const meses = data.meses || {};
+    const rows = [['Mês','Data','Pedido','Produto','Qtd','Preço Líquido','ST','Subtotal']];
+    Object.keys(meses).sort().reverse().forEach(mesKey => {
+      (meses[mesKey].itens||[]).forEach(it => {
+        rows.push([mesKey, it.data||'', it.pedidoId||'', it.nome||'', it.qty||0, Number(it.precoLiq||0).toFixed(2), Number(it.st||0).toFixed(2), Number(it.subtotal||0).toFixed(2)]);
+      });
+    });
+    const ws = XLSX.utils.aoa_to_sheet(rows);
+    ws['!cols'] = [{wch:10},{wch:18},{wch:22},{wch:40},{wch:6},{wch:12},{wch:10},{wch:12}];
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Histórico');
+    XLSX.writeFile(wb, `historico_${nome.replace(/[^a-zA-Z0-9]/g,'_')}_${new Date().toISOString().slice(0,10)}.xlsx`);
+  } catch(e){ alert('Erro ao exportar: '+e.message); }
+}
+
+
+/* ============ CONTAS DE ACESSO ============ */
+async function loadUsuariosFromServer(){
+  try {
+    const resp = await fetch('/api/auth');
+    if(resp.ok) USUARIOS = await resp.json();
+  } catch(e){ console.warn('Erro ao carregar contas:', e); }
+  return USUARIOS;
+}
+
+function escHtml(v){
+  return String(v==null?'':v).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function contaPendente(u){ return !u.emailVerificado || !u.celularVerificado; }
+
+/** Lojas da conta. Contas antigas caem no CNPJ do próprio cadastro. */
+function farmaciasDe(u){
+  if(u.farmacias && u.farmacias.length) return u.farmacias;
+  return u.cnpj ? [{ pk:0, cnpj:u.cnpj, razao:u.razao, fantasia:u.fantasia, associativismo:u.associativismo||'', principal:true, status:'ativa' }] : [];
+}
+
+function fmtCnpjAdmin(v){
+  const d = String(v||'').replace(/\D/g,'');
+  if(d.length !== 14) return String(v||'');
+  return d.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, '$1.$2.$3/$4-$5');
+}
+
+/** Abre/fecha a linha com todas as lojas da conta, sem sair da tabela. */
+function alternarLojas(pk){
+  const linha = document.getElementById('lojas-' + pk);
+  const bt = document.getElementById('lojas-bt-' + pk);
+  if(!linha) return;
+  const aberta = linha.style.display !== 'none';
+  linha.style.display = aberta ? 'none' : 'table-row';
+  if(bt) bt.classList.toggle('on', !aberta);
+}
+
+function renderUsuarios(){
+  const q = ($('usr-search').value||'').toLowerCase().trim();
+  const filtro = $('usr-filtro').value;
+
+  const total = USUARIOS.length;
+  const ativas = USUARIOS.filter(u => u.status === 'ativo').length;
+  const bloqueadas = USUARIOS.filter(u => u.status !== 'ativo').length;
+  const pendentes = USUARIOS.filter(contaPendente).length;
+  $('ku-tot').textContent = total;
+  $('ku-ativas').textContent = ativas;
+  $('ku-bloq').textContent = bloqueadas;
+  $('ku-pend').textContent = pendentes;
+  const totalLojas = USUARIOS.reduce((n, u) => n + farmaciasDe(u).length, 0);
+  const contasMulti = USUARIOS.filter(u => farmaciasDe(u).length > 1).length;
+  $('ku-lojas').textContent = totalLojas;
+  $('ku-multi').textContent = contasMulti + (contasMulti === 1 ? ' conta com mais de uma' : ' contas com mais de uma');
+
+  const filtered = USUARIOS.filter(u => {
+    if(filtro === 'ativo' && u.status !== 'ativo') return false;
+    if(filtro === 'bloqueado' && u.status === 'ativo') return false;
+    if(filtro === 'pendente' && !contaPendente(u)) return false;
+    if(!q) return true;
+    const lojas = farmaciasDe(u).map(f => [f.cnpj, String(f.cnpj||'').replace(/\D/g,''), f.razao, f.fantasia, f.associativismo].join(' ')).join(' ');
+    return [u.nomeCompleto, u.cnpj, u.cpf, u.email, u.celular, u.razao, u.fantasia, u.associativismo, u.distribuidora, lojas]
+      .join(' ').toLowerCase().includes(q);
+  });
+
+  const tbody = $('usr-tbody');
+  if(!filtered.length){
+    tbody.innerHTML = '<tr><td colspan="18" class="empty-tbl">Nenhuma conta encontrada</td></tr>';
+    return;
+  }
+
+  const selo = (ok, rotulo) =>
+    `<span style="display:inline-block;font-size:10px;font-weight:800;padding:2px 7px;border-radius:50px;margin:1px;background:${ok?'var(--gr-l)':'#FEF3C7'};color:${ok?'var(--gr)':'#92400E'}">${ok?'✓':'⌛'} ${rotulo}</span>`;
+
+  let html = '';
+  filtered.forEach(u => {
+    const criado = u.createdAt ? new Date(u.createdAt).toLocaleDateString('pt-BR') : '—';
+    const ultimo = u.ultimoAcesso ? new Date(u.ultimoAcesso).toLocaleString('pt-BR') : 'nunca';
+    const ativo = u.status === 'ativo';
+    const aceites = (u.declaracaoVeracidade?'✓':'✕') + ' Veracidade · ' + (u.autorizaInformacoes?'✓':'✕') + ' Contato · ' + (u.aceitaTermos?'✓':'✕') + ' LGPD';
+    const lojas = farmaciasDe(u);
+    html += `<tr>
+      <td style="font-size:11.5px">${criado}</td>
+      <td style="font-weight:700;font-size:12px">${escHtml(u.nomeCompleto)}</td>
+      <td style="font-family:monospace;font-size:11px">${escHtml(u.cpf)||'—'}</td>
+      <td style="font-size:11.5px">${escHtml(u.dataNascimento)||'—'}</td>
+      <td style="font-size:11px">${escHtml(u.email)}</td>
+      <td style="font-size:11.5px">${escHtml(u.celular)||'—'}</td>
+      <td class="center"><button class="lojas-bt${lojas.length>1?' multi':''}" id="lojas-bt-${u.pk}" title="Ver as lojas desta conta" onclick="alternarLojas(${u.pk})">🏪 ${lojas.length} ${lojas.length===1?'loja':'lojas'} <span class="lojas-ca">▾</span></button></td>
+      <td style="font-family:monospace;font-size:11px">${escHtml(u.cnpj)}</td>
+      <td style="font-size:12px">${escHtml(u.razao)}</td>
+      <td>${escHtml(u.fantasia)}</td>
+      <td>${escHtml(u.associativismo)||'—'}</td>
+      <td>${escHtml(u.distribuidora)||'—'}</td>
+      <td class="center" style="white-space:nowrap">
+        <button title="Alternar validação do e-mail" style="border:none;background:none;cursor:pointer;padding:0" onclick="alternarVerificacao(${u.pk},'email',${!u.emailVerificado})">${selo(u.emailVerificado,'E-mail')}</button>
+        <button title="Alternar validação do celular" style="border:none;background:none;cursor:pointer;padding:0" onclick="alternarVerificacao(${u.pk},'celular',${!u.celularVerificado})">${selo(u.celularVerificado,'Celular')}</button>
+      </td>
+      <td class="center" style="font-size:10.5px;font-weight:700;white-space:nowrap">${aceites}</td>
+      <td class="center"><span style="display:inline-block;font-size:10.5px;font-weight:800;padding:3px 9px;border-radius:50px;background:${ativo?'var(--gr-l)':'#FEE2E2'};color:${ativo?'var(--gr)':'#B91C1C'}">${ativo?'Ativa':'Bloqueada'}</span></td>
+      <td class="num" style="font-weight:800">${u.totalAcessos||0}</td>
+      <td style="font-size:11px">${ultimo}</td>
+      <td class="center" style="white-space:nowrap">
+        <button class="btn ${ativo?'btn-danger':'btn-gr'}" style="padding:4px 9px;font-size:11px" onclick="alternarStatusUsuario(${u.pk}, '${ativo?'bloqueado':'ativo'}')">${ativo?'🚫 Bloquear':'✅ Ativar'}</button>
+        <button class="btn btn-bl" style="padding:4px 9px;font-size:11px;margin-left:4px" onclick="abrirModalSenha(${u.pk})">🔑 Senha</button>
+        <button class="btn btn-danger" style="padding:4px 9px;font-size:11px;margin-left:4px" onclick="excluirUsuario(${u.pk})">🗑️</button>
+      </td>
+    </tr>
+    <tr id="lojas-${u.pk}" style="display:none">
+      <td colspan="18" style="background:var(--bg);padding:12px 16px">
+        <div class="lojas-tit">🏪 Lojas sob o login de ${escHtml(u.nomeCompleto)} <span>${escHtml(u.email)}</span></div>
+        <div class="lojas-box">
+          ${lojas.map(f => `<div class="loja-item">
+            <div class="loja-i">
+              <div class="loja-nome">${escHtml(f.fantasia)}${f.principal?'<span class="loja-tag">Principal</span>':''}</div>
+              <div class="loja-razao">${escHtml(f.razao)}</div>
+            </div>
+            <div class="loja-cnpj">${escHtml(fmtCnpjAdmin(f.cnpj))}</div>
+            <div class="loja-assoc">${escHtml(f.associativismo)||'—'}</div>
+          </div>`).join('')}
+        </div>
+      </td>
+    </tr>`;
+  });
+  tbody.innerHTML = html;
+}
+
+async function postAuth(payload){
+  const resp = await fetch('/api/auth', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
+  const data = await resp.json().catch(() => ({}));
+  if(!resp.ok || !data.ok) throw new Error(data.error || 'Operação não concluída.');
+  return data;
+}
+
+async function alternarVerificacao(pk, campo, valor){
+  try {
+    await postAuth({ action:'admin-verificar', pk, campo, valor });
+    await loadUsuariosFromServer();
+    renderUsuarios();
+  } catch(e){ alert('Erro: ' + e.message); }
+}
+
+async function alternarStatusUsuario(pk, status){
+  const u = USUARIOS.find(x => x.pk === pk);
+  const nome = u ? u.nomeCompleto : 'esta conta';
+  if(status === 'bloqueado' && !confirm(`Bloquear o acesso de ${nome}? A pessoa não conseguirá mais entrar na loja.`)) return;
+  try {
+    await postAuth({ action:'admin-status', pk, status });
+    await loadUsuariosFromServer();
+    renderUsuarios();
+  } catch(e){ alert('Erro: ' + e.message); }
+}
+
+function abrirModalSenha(pk){
+  const u = USUARIOS.find(x => x.pk === pk);
+  if(!u) return;
+  _usrPwPk = pk;
+  $('usr-pw-sub').textContent = `Definir uma nova senha para ${u.nomeCompleto} (${u.email}).`;
+  $('usr-pw-input').value = '';
+  $('usr-pw-ov').classList.add('on');
+}
+function fecharModalSenha(){ $('usr-pw-ov').classList.remove('on'); _usrPwPk = null; }
+
+async function salvarNovaSenhaUsuario(){
+  if(!_usrPwPk) return;
+  const nova = $('usr-pw-input').value;
+  try {
+    await postAuth({ action:'admin-redefinir-senha', pk:_usrPwPk, novaSenha: nova });
+    fecharModalSenha();
+    alert('✓ Senha redefinida. Informe a nova senha ao cliente por um canal seguro.');
+  } catch(e){ alert('Erro: ' + e.message); }
+}
+
+async function excluirUsuario(pk){
+  const u = USUARIOS.find(x => x.pk === pk);
+  if(!u) return;
+  if(!confirm(`Excluir definitivamente a conta de ${u.nomeCompleto} (${u.email})?\n\nO histórico de pedidos e o registro em Clientes são mantidos.`)) return;
+  try {
+    const resp = await fetch('/api/auth?pk=' + encodeURIComponent(pk), { method:'DELETE' });
+    if(!resp.ok) throw new Error('Falha ao excluir');
+    await loadUsuariosFromServer();
+    renderUsuarios();
+  } catch(e){ alert('Erro: ' + e.message); }
+}
+
+function exportarUsuariosExcel(){
+  if(!USUARIOS.length) return alert('Nenhuma conta para exportar.');
+  const rows = [['Cadastro','Nome','CPF','Data de Nascimento','E-mail','Celular','Lojas na conta','CNPJ','Razão Social','Nome Fantasia','Associativismo','Distribuidora','E-mail validado','Celular validado','Veracidade','Autoriza contato','Aceite LGPD','Status','Total de acessos','Último acesso']];
+  USUARIOS.forEach(u => {
+    rows.push([
+      u.createdAt ? new Date(u.createdAt).toLocaleDateString('pt-BR') : '',
+      u.nomeCompleto||'', u.cpf||'', u.dataNascimento||'', u.email||'', u.celular||'',
+      farmaciasDe(u).length,
+      u.cnpj||'', u.razao||'', u.fantasia||'', u.associativismo||'', u.distribuidora||'',
+      u.emailVerificado?'Sim':'Não', u.celularVerificado?'Sim':'Não',
+      u.declaracaoVeracidade?'Sim':'Não', u.autorizaInformacoes?'Sim':'Não', u.aceitaTermos?'Sim':'Não',
+      u.status === 'ativo' ? 'Ativa' : 'Bloqueada',
+      u.totalAcessos||0,
+      u.ultimoAcesso ? new Date(u.ultimoAcesso).toLocaleString('pt-BR') : ''
+    ]);
+  });
+  const ws = XLSX.utils.aoa_to_sheet(rows);
+  ws['!cols'] = [{wch:12},{wch:26},{wch:16},{wch:16},{wch:28},{wch:16},{wch:12},{wch:20},{wch:30},{wch:24},{wch:18},{wch:16},{wch:14},{wch:14},{wch:12},{wch:16},{wch:12},{wch:12},{wch:10},{wch:18}];
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Contas');
+
+  // Aba própria com uma linha por loja: facilita cruzar CNPJ com o comprador.
+  const lojasRows = [['Comprador','E-mail do login','CNPJ','Razão Social','Nome Fantasia','Associativismo','Principal','Status da conta']];
+  USUARIOS.forEach(u => {
+    farmaciasDe(u).forEach(f => {
+      lojasRows.push([
+        u.nomeCompleto||'', u.email||'', fmtCnpjAdmin(f.cnpj), f.razao||'', f.fantasia||'',
+        f.associativismo||'', f.principal ? 'Sim' : 'Não', u.status === 'ativo' ? 'Ativa' : 'Bloqueada'
+      ]);
+    });
+  });
+  const wsLojas = XLSX.utils.aoa_to_sheet(lojasRows);
+  wsLojas['!cols'] = [{wch:26},{wch:28},{wch:20},{wch:30},{wch:24},{wch:18},{wch:10},{wch:14}];
+  XLSX.utils.book_append_sheet(wb, wsLojas, 'Lojas');
+  XLSX.writeFile(wb, `globopharma_contas_${new Date().toISOString().slice(0,10)}.xlsx`);
+}
+
+async function refreshAll(){
+  await Promise.all([loadPedidosFromServer(), loadAcessosFromServer(), loadClientesFromServer(), loadUsuariosFromServer()]);
+  refreshDashboard();
+  renderTable();
+  refreshAcessosDist();
+  renderAcessos();
+  renderPedidos();
+  renderClientes();
+  renderUsuarios();
+  updateStorageBar();
+  try {
+    const resp = await fetch('/api/config?chave=email_destino');
+    if(resp.ok){
+      const data = await resp.json();
+      if(data && data.valor && $('cfg-email')) $('cfg-email').value = data.valor;
+      else if($('cfg-email')) $('cfg-email').value = 'rodrigo.demarco@globopharma.com.br';
+    }
+  } catch(e){
+    if($('cfg-email')) $('cfg-email').value = 'rodrigo.demarco@globopharma.com.br';
+  }
+  try {
+    const resp2 = await fetch('/api/config?chave=pedido_minimo');
+    if(resp2.ok){
+      const data2 = await resp2.json();
+      if(data2 && data2.valor && $('cfg-pedido-min')) $('cfg-pedido-min').value = data2.valor;
+      else if($('cfg-pedido-min')) $('cfg-pedido-min').value = '';
+    }
+  } catch(e){
+    if($('cfg-pedido-min')) $('cfg-pedido-min').value = '';
+  }
+}
+
+/* ============ INIT ============ */
+(function init(){
+  if(sessionStorage.getItem('gp_adm_sess')==='1'){
+    showAdmin();
+  }
+})();
+</script>
+<form name="pedido" method="POST" data-netlify="true" netlify-honeypot="bot-field" hidden>
+  <input type="hidden" name="form-name" value="pedido" />
+  <input name="bot-field" />
+  <input name="subject" />
+  <input name="pedido-id" />
+  <input name="data" />
+  <input name="razao-social" />
+  <input name="fantasia" />
+  <input name="cnpj" />
+  <input name="comprador" />
+  <input name="telefone-cliente" />
+  <input name="email-cliente" />
+  <input name="associativismo" />
+  <input name="distribuidora" />
+  <input name="qtd-itens" />
+  <input name="total-liquido" />
+  <input name="st-total" />
+  <input name="total-geral" />
+  <textarea name="itens-resumo"></textarea>
+  <textarea name="layout-txt"></textarea>
+  <input name="observacao" />
+</form>
+</body>
+</html>

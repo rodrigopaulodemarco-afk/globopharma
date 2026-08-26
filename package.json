@@ -1,0 +1,13 @@
+{
+  "name": "globopharma-loja",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@netlify/database": "latest",
+    "drizzle-orm": "beta"
+  },
+  "devDependencies": {
+    "drizzle-kit": "beta",
+    "@netlify/functions": "latest"
+  }
+}
