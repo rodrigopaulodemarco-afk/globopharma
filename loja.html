@@ -2154,7 +2154,18 @@ function passoAnterior(){
 }
 
 async function passoProximo(){
-  const problema = await validarPasso(cadPasso);
+  // A etapa 1 consulta a Receita Federal, então pode demorar alguns segundos.
+  const btn = $('cad-avancar');
+  const rotulo = btn ? btn.textContent : '';
+  if(btn){ btn.disabled = true; btn.textContent = 'Verificando...'; }
+
+  let problema = '';
+  try {
+    problema = await validarPasso(cadPasso);
+  } finally {
+    if(btn){ btn.disabled = false; btn.textContent = rotulo; }
+  }
+
   if(problema){ showErrIn('cad', problema); return; }
   if(cadPasso === CAD_TOTAL){ finalizarCadastro(); return; }
   cadPasso++;
@@ -2172,6 +2183,7 @@ async function validarPasso(passo){
     if(!$('c-fantasia').value.trim()) return 'Informe o Nome Fantasia.';
     const livre = await checarDisponibilidade({ cnpj: $('c-cnpj').value });
     if(livre === 'cnpj') return 'Já existe uma conta para este CNPJ. Faça login ou recupere sua senha.';
+    if(livre.startsWith('receita:')) return livre.slice(8);
     return '';
   }
   if(passo === 2){
@@ -2212,6 +2224,7 @@ async function checarDisponibilidade(payload){
     const d = await resp.json();
     if(d.emailEmUso) return 'email';
     if(d.cnpjEmUso) return 'cnpj';
+    if(d.receita && d.receita.motivo) return 'receita:' + d.receita.motivo;
   } catch(e){}
   return '';
 }
