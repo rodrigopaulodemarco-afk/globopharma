@@ -102,8 +102,6 @@ async function sincronizarCliente(u: {
   celular: string;
   email: string;
   associativismo: string;
-  cpf: string;
-  dataNascimento: string;
 }) {
   const existente = await db.select().from(clientes).where(eq(clientes.cnpj, u.cnpj)).limit(1);
   if (existente.length) {
@@ -116,8 +114,6 @@ async function sincronizarCliente(u: {
         telefone: u.celular,
         email: u.email,
         associativismo: u.associativismo,
-        cpf: u.cpf,
-        dataNascimento: u.dataNascimento,
         updatedAt: new Date(),
       })
       .where(eq(clientes.cnpj, u.cnpj));
@@ -130,8 +126,6 @@ async function sincronizarCliente(u: {
       telefone: u.celular,
       email: u.email,
       associativismo: u.associativismo,
-      cpf: u.cpf,
-      dataNascimento: u.dataNascimento,
     });
   }
 }
@@ -299,11 +293,9 @@ async function tratar(req: Request) {
   if (action === "cadastrar") {
     const email = normalizarEmail(body.email);
     const cnpj = String(body.cnpj || "").trim();
-    const cpf = String(body.cpf || "").trim();
     const razao = String(body.razao || "").trim();
     const fantasia = String(body.fantasia || "").trim();
     const nomeCompleto = String(body.nomeCompleto || "").trim();
-    const dataNascimento = String(body.dataNascimento || "").trim();
     const celular = String(body.celular || "").trim();
     const associativismo = String(body.associativismo || "").trim();
     const distribuidora = String(body.distribuidora || "").trim();
@@ -314,8 +306,6 @@ async function tratar(req: Request) {
     if (!razao) return erro("Razão Social é obrigatória");
     if (!fantasia) return erro("Nome Fantasia é obrigatório");
     if (!nomeCompleto || nomeCompleto.split(/\s+/).length < 2) return erro("Informe o nome completo");
-    if (!cpfValido(cpf)) return erro("CPF inválido. Verifique se digitou corretamente.");
-    if (!nascimentoValido(dataNascimento)) return erro("Data de nascimento inválida");
     if (!emailValido(email)) return erro("E-mail deve ter formato válido");
     if (soDigitos(celular).length !== 11) return erro("Celular deve ter DDD + 9 dígitos");
     if (!body.autorizaInformacoes) return erro("Você deve autorizar receber informações");
@@ -347,8 +337,7 @@ async function tratar(req: Request) {
         distribuidora,
         distId,
         nomeCompleto,
-        cpf,
-        dataNascimento,
+        cpf: "",
         celular,
         autorizaInformacoes: true,
         declaracaoVeracidade: true,
@@ -365,8 +354,6 @@ async function tratar(req: Request) {
       celular,
       email,
       associativismo,
-      cpf,
-      dataNascimento,
     });
 
     // A farmácia do cadastro é a principal da conta; outras podem ser
@@ -465,11 +452,7 @@ async function tratar(req: Request) {
     const email = normalizarEmail(body.email);
     const encontrados = await db.select().from(usuarios).where(eq(usuarios.email, email)).limit(1);
     const u = encontrados[0];
-    const confere =
-      !!u &&
-      soDigitos(u.cnpj) === soDigitos(body.cnpj) &&
-      soDigitos(u.cpf) === soDigitos(body.cpf) &&
-      u.dataNascimento === String(body.dataNascimento || "").trim();
+    const confere = !!u && soDigitos(u.cnpj) === soDigitos(body.cnpj);
 
     if (!confere) {
       return erro("Os dados informados não conferem com nenhum cadastro. Confira ou fale com seu representante.", 401);
@@ -570,8 +553,6 @@ async function tratar(req: Request) {
       celular: u.celular || "",
       email: u.email,
       associativismo,
-      cpf: u.cpf || "",
-      dataNascimento: u.dataNascimento || "",
     });
 
     return Response.json({ ok: true, farmacia: nova, farmacias: await listarFarmacias(u.pk) }, { status: 201 });
