@@ -2,49 +2,9 @@ import type { Config } from "@netlify/functions";
 import { db } from "../../db/index.js";
 import { pedidos } from "../../db/schema.js";
 import { eq } from "drizzle-orm";
+import { enviarEmail } from "../lib/email.js";
 
-async function tentarEnviarEmail(emailDestino: string, formData: Record<string, unknown>): Promise<{ ok: boolean; detail?: string }> {
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 15000);
-
-  try {
-    const resp = await fetch(
-      "https://formsubmit.co/ajax/" + encodeURIComponent(emailDestino),
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-        body: JSON.stringify(formData),
-        signal: controller.signal,
-      }
-    );
-
-    const text = await resp.text();
-    let data: Record<string, string> = {};
-    try {
-      data = JSON.parse(text);
-    } catch {
-      // not JSON
-    }
-
-    if (!resp.ok) {
-      return { ok: false, detail: `FormSubmit HTTP ${resp.status}: ${text}` };
-    }
-
-    if (data && data.success === "false") {
-      return { ok: false, detail: `FormSubmit error: ${data.message || "unknown"}` };
-    }
-
-    return { ok: true };
-  } catch (e) {
-    const msg = e instanceof Error ? e.message : String(e);
-    return { ok: false, detail: msg };
-  } finally {
-    clearTimeout(timeout);
-  }
-}
+const MAX_RETRIES = 3;
 
 export default async (req: Request) => {
   if (req.method !== "POST") {
@@ -58,19 +18,11 @@ export default async (req: Request) => {
     return Response.json({ error: "emailDestino and payload required" }, { status: 400 });
   }
 
-  const formData = {
-    ...payload,
-    _subject: subject || "Novo Pedido",
-    _template: "table",
-    _captcha: "false",
-  };
-
-  const MAX_RETRIES = 3;
   let lastError = "";
 
   for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
     console.log(`Email attempt ${attempt}/${MAX_RETRIES} for pedido: ${pedidoId || "unknown"}`);
-    const result = await tentarEnviarEmail(emailDestino, formData);
+    const result = await enviarEmail(emailDestino, subject || "Novo Pedido", payload);
 
     if (result.ok) {
       console.log(`Email sent successfully on attempt ${attempt} for pedido: ${pedidoId || "unknown"}`);
@@ -91,6 +43,12 @@ export default async (req: Request) => {
 
     lastError = result.detail || "unknown error";
     console.error(`Email attempt ${attempt} failed:`, lastError);
+
+    // Erro definitivo (chave inválida, remetente não validado): repetir não adianta.
+    if (result.retriable === false) {
+      console.error("Erro definitivo, abortando novas tentativas:", lastError);
+      return Response.json({ ok: false, error: `Email não enviado: ${lastError}` }, { status: 502 });
+    }
 
     if (attempt < MAX_RETRIES) {
       const delay = Math.min(1000 * Math.pow(2, attempt - 1), 5000);

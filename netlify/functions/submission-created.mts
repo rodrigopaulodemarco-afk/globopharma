@@ -2,6 +2,7 @@ import type { Context } from "@netlify/functions";
 import { db } from "../../db/index.js";
 import { pedidos, configuracoes } from "../../db/schema.js";
 import { eq } from "drizzle-orm";
+import { enviarEmail } from "../lib/email.js";
 
 interface FormPayload {
   form_name: string;
@@ -9,56 +10,8 @@ interface FormPayload {
   created_at: string;
 }
 
-async function enviarViaFormSubmit(emailDestino: string, formData: Record<string, string>, subject: string): Promise<boolean> {
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 15000);
-
-  try {
-    const resp = await fetch(
-      "https://formsubmit.co/ajax/" + encodeURIComponent(emailDestino),
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-        body: JSON.stringify({
-          ...formData,
-          _subject: subject,
-          _template: "table",
-          _captcha: "false",
-        }),
-        signal: controller.signal,
-      }
-    );
-
-    if (!resp.ok) {
-      const text = await resp.text();
-      console.error(`FormSubmit HTTP error: ${resp.status}`, text);
-      return false;
-    }
-
-    const text = await resp.text();
-    let data: Record<string, string> = {};
-    try {
-      data = JSON.parse(text);
-    } catch {
-      // not JSON
-    }
-
-    if (data && data.success === "false") {
-      console.error("FormSubmit error:", data.message);
-      return false;
-    }
-
-    return true;
-  } catch (e) {
-    console.error("FormSubmit fetch error:", e);
-    return false;
-  } finally {
-    clearTimeout(timeout);
-  }
-}
+const EMAIL_PADRAO = "rodrigo.demarco@globopharma.com.br";
+const MAX_RETRIES = 3;
 
 export default async (req: Request, context: Context) => {
   const { payload } = (await req.json()) as { payload: FormPayload };
@@ -88,7 +41,7 @@ export default async (req: Request, context: Context) => {
     return new Response("OK");
   }
 
-  let emailDestino = "rodrigo.demarco@globopharma.com.br";
+  let emailDestino = EMAIL_PADRAO;
   try {
     const [cfg] = await db
       .select({ valor: configuracoes.valor })
@@ -102,23 +55,34 @@ export default async (req: Request, context: Context) => {
 
   const formData: Record<string, string> = {};
   for (const [k, v] of Object.entries(payload.data)) {
-    if (k !== "form-name" && k !== "bot-field") {
+    if (k !== "form-name" && k !== "bot-field" && k !== "subject") {
       formData[k] = v;
     }
   }
 
   const subject = payload.data["subject"] || `Novo Pedido ${pedidoId}`;
 
-  const MAX_RETRIES = 3;
   let sent = false;
+  let lastError = "";
 
   for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
     console.log(`Fallback email attempt ${attempt}/${MAX_RETRIES} for pedido: ${pedidoId}`);
-    sent = await enviarViaFormSubmit(emailDestino, formData, subject);
-    if (sent) {
+    const result = await enviarEmail(emailDestino, subject, formData);
+
+    if (result.ok) {
+      sent = true;
       console.log(`Fallback email sent successfully on attempt ${attempt} for pedido: ${pedidoId}`);
       break;
     }
+
+    lastError = result.detail || "unknown error";
+    console.error(`Fallback email attempt ${attempt} failed:`, lastError);
+
+    if (result.retriable === false) {
+      console.error("Erro definitivo, abortando novas tentativas:", lastError);
+      break;
+    }
+
     if (attempt < MAX_RETRIES) {
       const delay = Math.min(1000 * Math.pow(2, attempt - 1), 5000);
       await new Promise((r) => setTimeout(r, delay));
@@ -135,7 +99,7 @@ export default async (req: Request, context: Context) => {
       console.error("Failed to update emailEnviado flag for pedido:", pedidoId, e);
     }
   } else {
-    console.error(`All ${MAX_RETRIES} fallback email attempts FAILED for pedido: ${pedidoId}`);
+    console.error(`Fallback email FAILED for pedido: ${pedidoId} — ${lastError}`);
   }
 
   return new Response("OK");
