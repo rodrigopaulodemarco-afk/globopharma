@@ -1,6 +1,6 @@
 import type { Config } from "@netlify/functions";
 import { db } from "../../db/index.js";
-import { usuarios, clientes, consentimentosLgpd, acessos, usuarioFarmacias } from "../../db/schema.js";
+import { usuarios, clientes, configuracoes, consentimentosLgpd, acessos, usuarioFarmacias } from "../../db/schema.js";
 import { eq, and, asc, desc, inArray, sql } from "drizzle-orm";
 import { createHmac, randomBytes, scryptSync, timingSafeEqual } from "node:crypto";
 import { enviarEmail } from "../lib/email.js";
@@ -72,6 +72,119 @@ function codigoConfere(codigo: string, email: string, senhaHash: string) {
     if (informado.length === esperado.length && timingSafeEqual(informado, esperado)) ok = true;
   }
   return ok;
+}
+
+/* ============ CONSULTA À RECEITA FEDERAL ============ */
+/*
+ * Não existe API pública oficial da Receita Federal (a do Serpro é paga). O que
+ * consultamos é a base de dados abertos do CNPJ, publicada pela própria Receita
+ * e servida pela BrasilAPI, com a Minha Receita como segunda fonte. É o mesmo
+ * dado do cartão CNPJ, atualizado mensalmente — uma empresa aberta há poucas
+ * semanas pode ainda não constar.
+ */
+const CNAES_FARMACIA = [
+  "4771701", // Comércio varejista de produtos farmacêuticos, sem manipulação de fórmulas
+  "4771702", // Comércio varejista de produtos farmacêuticos, com manipulação de fórmulas
+  "4771703", // Comércio varejista de produtos farmacêuticos homeopáticos
+];
+const RECEITA_TIMEOUT_MS = 8000;
+const RECEITA_FONTES = [
+  (c: string) => `https://brasilapi.com.br/api/cnpj/v1/${c}`,
+  (c: string) => `https://minhareceita.org/${c}`,
+];
+
+type ConsultaReceita =
+  | { ok: true; cnaePrincipal: string; atividade: string; situacao: string }
+  | { ok: false; motivo: "nao_encontrado" | "indisponivel"; detalhe?: string };
+
+async function consultarReceita(cnpj: string): Promise<ConsultaReceita> {
+  const c = soDigitos(cnpj);
+  if (c.length !== 14) return { ok: false, motivo: "indisponivel", detalhe: "CNPJ incompleto" };
+
+  let ultimoErro = "";
+
+  for (const montarUrl of RECEITA_FONTES) {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), RECEITA_TIMEOUT_MS);
+    try {
+      const resp = await fetch(montarUrl(c), { signal: controller.signal });
+
+      // 404 é resposta legítima da base: o CNPJ não existe lá.
+      if (resp.status === 404) return { ok: false, motivo: "nao_encontrado" };
+
+      if (!resp.ok) {
+        ultimoErro = `HTTP ${resp.status}`;
+        continue;
+      }
+
+      const d = (await resp.json()) as Record<string, unknown>;
+      return {
+        ok: true,
+        cnaePrincipal: soDigitos(d.cnae_fiscal),
+        atividade: String(d.cnae_fiscal_descricao || ""),
+        situacao: String(d.descricao_situacao_cadastral || "").toUpperCase(),
+      };
+    } catch (e) {
+      ultimoErro = e instanceof Error ? e.message : String(e);
+    } finally {
+      clearTimeout(timeout);
+    }
+  }
+
+  return { ok: false, motivo: "indisponivel", detalhe: ultimoErro };
+}
+
+/*
+ * Devolve a mensagem de recusa, ou "" quando o CNPJ pode se cadastrar.
+ * Consulta indisponível NÃO bloqueia: uma queda da fonte não pode travar a
+ * entrada de clientes novos — o cadastro segue e um aviso é enviado por e-mail.
+ */
+function recusaPorAtividade(r: ConsultaReceita): string {
+  if (!r.ok) return "";
+
+  if (r.situacao && r.situacao !== "ATIVA") {
+    return `Este CNPJ está com situação cadastral "${r.situacao}" na Receita Federal. Regularize a situação ou fale com o seu representante.`;
+  }
+
+  if (!CNAES_FARMACIA.includes(r.cnaePrincipal)) {
+    const atividade = r.atividade ? ` A atividade principal registrada é "${r.atividade}".` : "";
+    return `Este portal atende farmácias e drogarias. O CNPJ informado não tem comércio varejista de produtos farmacêuticos como atividade principal na Receita Federal.${atividade} Se houver engano, fale com o seu representante.`;
+  }
+
+  return "";
+}
+
+/* Avisa o responsável quando um cadastro passou sem confirmação da Receita. */
+async function avisarReceitaNaoConferida(dados: {
+  cnpj: string;
+  razao: string;
+  fantasia: string;
+  email: string;
+  motivo: string;
+  detalhe?: string;
+}) {
+  try {
+    let destino = "rodrigo.demarco@globopharma.com.br";
+    const [cfg] = await db
+      .select({ valor: configuracoes.valor })
+      .from(configuracoes)
+      .where(eq(configuracoes.chave, "email_destino"))
+      .limit(1);
+    if (cfg?.valor) destino = cfg.valor;
+
+    await enviarEmail(destino, `Cadastro sem confirmação da Receita — ${dados.fantasia}`, {
+      "Aviso": "A conta foi criada, mas não foi possível confirmar a atividade do CNPJ na Receita Federal.",
+      "CNPJ": dados.cnpj,
+      "Razão Social": dados.razao,
+      "Nome Fantasia": dados.fantasia,
+      "E-mail da conta": dados.email,
+      "Motivo": dados.motivo === "nao_encontrado" ? "CNPJ não encontrado na base da Receita" : "Consulta indisponível",
+      "Detalhe": dados.detalhe || "-",
+      "O que fazer": "Confira o CNPJ manualmente e bloqueie a conta no painel administrativo se não for uma farmácia.",
+    });
+  } catch (e) {
+    console.error("Falha ao avisar sobre cadastro sem confirmação da Receita:", e);
+  }
 }
 
 /* ============ VALIDACOES ============ */
@@ -338,7 +451,16 @@ async function tratar(req: Request) {
     if (cnpj.length === 14) {
       cnpjEmUso = await cnpjJaUsado(cnpj);
     }
-    return Response.json({ ok: true, emailEmUso, cnpjEmUso });
+
+    // Só consulta a Receita se o CNPJ ainda estiver livre: a mensagem de "já
+    // existe conta" é mais útil e evita uma consulta desnecessária.
+    let receita: { consultada: boolean; motivo: string } | null = null;
+    if (cnpj.length === 14 && !cnpjEmUso) {
+      const r = await consultarReceita(cnpj);
+      receita = { consultada: r.ok, motivo: recusaPorAtividade(r) };
+    }
+
+    return Response.json({ ok: true, emailEmUso, cnpjEmUso, receita });
   }
 
   /* ---------- CADASTRO ---------- */
@@ -373,6 +495,12 @@ async function tratar(req: Request) {
     if (await cnpjJaUsado(cnpj)) {
       return erro("Já existe uma conta para este CNPJ. Faça login ou recupere sua senha.", 409);
     }
+
+    // A checagem também roda na etapa 1 do formulário, mas é aqui que ela vale:
+    // o front pode ser contornado, esta é a porta que realmente cria a conta.
+    const receita = await consultarReceita(cnpj);
+    const recusa = recusaPorAtividade(receita);
+    if (recusa) return erro(recusa, 403);
 
     const { hash, salt } = gerarHash(senha);
 
@@ -441,6 +569,18 @@ async function tratar(req: Request) {
       });
     } catch (e) {
       console.error("Falha ao registrar consentimento LGPD:", e);
+    }
+
+    if (!receita.ok) {
+      console.error(`Cadastro sem confirmação da Receita: CNPJ ${soDigitos(cnpj)} (${receita.motivo})`);
+      await avisarReceitaNaoConferida({
+        cnpj,
+        razao,
+        fantasia,
+        email,
+        motivo: receita.motivo,
+        detalhe: receita.detalhe,
+      });
     }
 
     const farmaciasCriadas = await listarFarmacias(criado.pk);
