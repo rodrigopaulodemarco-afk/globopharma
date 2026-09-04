@@ -454,9 +454,9 @@ table.tbl{width:100%;border-collapse:collapse;font-size:12.5px;min-width:1100px}
         <div class="tbl-wrap" style="max-height:70vh">
           <table class="tbl">
             <thead><tr>
-              <th>Razão Social</th><th>Nome Fantasia</th><th>CNPJ</th><th>Comprador</th><th>CPF</th><th>Nascimento</th><th>Telefone</th><th>Email</th><th>Associativismo</th><th class="num">Pedidos</th><th class="num">Valor Total</th><th>Último Pedido</th><th class="center">Ações</th>
+              <th>Razão Social</th><th>Nome Fantasia</th><th>CNPJ</th><th>Comprador</th><th>Telefone</th><th>Email</th><th>Associativismo</th><th class="num">Pedidos</th><th class="num">Valor Total</th><th>Último Pedido</th><th class="center">Ações</th>
             </tr></thead>
-            <tbody id="cli-tbody"><tr><td colspan="13" class="empty-tbl">Nenhum cliente cadastrado ainda. Clique em "Sincronizar com pedidos" para importar.</td></tr></tbody>
+            <tbody id="cli-tbody"><tr><td colspan="11" class="empty-tbl">Nenhum cliente cadastrado ainda. Clique em "Sincronizar com pedidos" para importar.</td></tr></tbody>
           </table>
         </div>
       </div>
@@ -489,7 +489,7 @@ table.tbl{width:100%;border-collapse:collapse;font-size:12.5px;min-width:1100px}
       </div>
       <div class="panel">
         <div class="toolbar">
-          <div class="search"><input id="usr-search" placeholder="Buscar por nome, CNPJ (de qualquer loja), CPF, e-mail, celular..." oninput="renderUsuarios()"/></div>
+          <div class="search"><input id="usr-search" placeholder="Buscar por nome, CNPJ (de qualquer loja), e-mail, celular..." oninput="renderUsuarios()"/></div>
           <select id="usr-filtro" onchange="renderUsuarios()" style="border:2px solid var(--bd);border-radius:50px;padding:8px 14px;font-family:'Nunito';font-size:12.5px;background:var(--bg);outline:none">
             <option value="">Todas as contas</option>
             <option value="ativo">Somente ativas</option>
@@ -502,7 +502,7 @@ table.tbl{width:100%;border-collapse:collapse;font-size:12.5px;min-width:1100px}
         <div class="tbl-wrap" style="max-height:70vh">
           <table class="tbl">
             <thead><tr>
-              <th>Cadastro</th><th>Nome</th><th>CPF</th><th>Nascimento</th><th>E-mail</th><th>Celular</th>
+              <th>Cadastro</th><th>Nome</th><th>E-mail</th><th>Celular</th>
               <th class="center">Lojas</th>
               <th>CNPJ</th><th>Razão Social</th><th>Nome Fantasia</th><th>Associativismo</th><th>Distribuidora</th>
               <th class="center">Validação</th><th class="center">Aceites</th><th class="center">Status</th>
@@ -587,7 +587,7 @@ table.tbl{width:100%;border-collapse:collapse;font-size:12.5px;min-width:1100px}
       </div>
       <div class="panel">
         <h3>📧 Email de destino dos pedidos</h3>
-        <div class="desc">Quando um cliente finaliza um pedido na loja, uma notificação é registrada automaticamente via Netlify Forms. Para receber as notificações por email, configure em: <b>Netlify Dashboard → Project configuration → Notifications → Form submission notifications</b> (selecione o formulário "pedido" e adicione o email desejado). Este campo abaixo é salvo como referência nos pedidos.</div>
+        <div class="desc">Quando um cliente finaliza um pedido na loja, o email de notificação é enviado para o endereço abaixo através do <b>Resend</b> (requer a variável <code>RESEND_API_KEY</code> nas variáveis de ambiente do Netlify). Aceita mais de um destinatário separados por vírgula. Como rede de segurança, o pedido também é registrado no Netlify Forms — para receber esse aviso paralelo, configure em <b>Netlify Dashboard → Project configuration → Notifications → Form submission notifications</b> (formulário "pedido").</div>
         <div class="fg"><label class="fl">Email destinatário</label><input class="fi" id="cfg-email" type="email" placeholder="rodrigo.demarco@globopharma.com.br"/></div>
         <button class="btn btn-or" onclick="alterarEmail()">Salvar email</button>
         <div class="alert a-ok" id="cfg-email-ok" style="margin-top:14px"><span>✓ Email salvo!</span></div>
@@ -1785,7 +1785,7 @@ function renderClientes(){
   const q = ($('cli-search').value||'').toLowerCase().trim();
   const filtered = CLIENTES.filter(c => {
     if(!q) return true;
-    return (c.razao+' '+c.fantasia+' '+c.cnpj+' '+(c.comprador||'')+' '+(c.email||'')+' '+(c.telefone||'')+' '+(c.associativismo||'')+' '+(c.cpf||'')).toLowerCase().includes(q);
+    return (c.razao+' '+c.fantasia+' '+c.cnpj+' '+(c.comprador||'')+' '+(c.email||'')+' '+(c.telefone||'')+' '+(c.associativismo||'')).toLowerCase().includes(q);
   });
 
   let totalVal = 0, totalPeds = 0;
@@ -1795,7 +1795,7 @@ function renderClientes(){
   $('kc-peds').textContent = totalPeds;
 
   const tbody = $('cli-tbody');
-  if(!filtered.length){ tbody.innerHTML = '<tr><td colspan="13" class="empty-tbl">Nenhum cliente encontrado</td></tr>'; return; }
+  if(!filtered.length){ tbody.innerHTML = '<tr><td colspan="11" class="empty-tbl">Nenhum cliente encontrado</td></tr>'; return; }
   let html = '';
   filtered.forEach(c => {
     const lastDate = c.ultimoPedido ? new Date(c.ultimoPedido).toLocaleDateString('pt-BR') : '—';
@@ -1804,8 +1804,6 @@ function renderClientes(){
       <td>${c.fantasia||'—'}</td>
       <td style="font-family:monospace;font-size:11px">${c.cnpj||'—'}</td>
       <td>${c.comprador||'—'}</td>
-      <td style="font-family:monospace;font-size:11px">${c.cpf||'—'}</td>
-      <td style="font-size:11.5px">${c.dataNascimento||'—'}</td>
       <td>${c.telefone||'—'}</td>
       <td style="font-size:11px">${c.email||'—'}</td>
       <td>${c.associativismo||'—'}</td>
@@ -1913,10 +1911,10 @@ async function excluirCliente(cnpj){
 
 function exportarClientesExcel(){
   if(!CLIENTES.length) return alert('Nenhum cliente para exportar.');
-  const rows = [['Razão Social','Nome Fantasia','CNPJ','Comprador','CPF','Data de Nascimento','Telefone/WhatsApp','Email','Associativismo','Total Pedidos','Valor Total (R$)','Último Pedido']];
+  const rows = [['Razão Social','Nome Fantasia','CNPJ','Comprador','Telefone/WhatsApp','Email','Associativismo','Total Pedidos','Valor Total (R$)','Último Pedido']];
   CLIENTES.forEach(c => {
     rows.push([
-      c.razao||'', c.fantasia||'', c.cnpj||'', c.comprador||'', c.cpf||'', c.dataNascimento||'',
+      c.razao||'', c.fantasia||'', c.cnpj||'', c.comprador||'',
       c.telefone||'', c.email||'', c.associativismo||'',
       c.totalPedidos||0, Number(c.totalValor||0).toFixed(2),
       c.ultimoPedido ? new Date(c.ultimoPedido).toLocaleDateString('pt-BR') : ''
@@ -2016,13 +2014,13 @@ function renderUsuarios(){
     if(filtro === 'pendente' && !contaPendente(u)) return false;
     if(!q) return true;
     const lojas = farmaciasDe(u).map(f => [f.cnpj, String(f.cnpj||'').replace(/\D/g,''), f.razao, f.fantasia, f.associativismo].join(' ')).join(' ');
-    return [u.nomeCompleto, u.cnpj, u.cpf, u.email, u.celular, u.razao, u.fantasia, u.associativismo, u.distribuidora, lojas]
+    return [u.nomeCompleto, u.cnpj, u.email, u.celular, u.razao, u.fantasia, u.associativismo, u.distribuidora, lojas]
       .join(' ').toLowerCase().includes(q);
   });
 
   const tbody = $('usr-tbody');
   if(!filtered.length){
-    tbody.innerHTML = '<tr><td colspan="18" class="empty-tbl">Nenhuma conta encontrada</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="16" class="empty-tbl">Nenhuma conta encontrada</td></tr>';
     return;
   }
 
@@ -2039,8 +2037,6 @@ function renderUsuarios(){
     html += `<tr>
       <td style="font-size:11.5px">${criado}</td>
       <td style="font-weight:700;font-size:12px">${escHtml(u.nomeCompleto)}</td>
-      <td style="font-family:monospace;font-size:11px">${escHtml(u.cpf)||'—'}</td>
-      <td style="font-size:11.5px">${escHtml(u.dataNascimento)||'—'}</td>
       <td style="font-size:11px">${escHtml(u.email)}</td>
       <td style="font-size:11.5px">${escHtml(u.celular)||'—'}</td>
       <td class="center"><button class="lojas-bt${lojas.length>1?' multi':''}" id="lojas-bt-${u.pk}" title="Ver as lojas desta conta" onclick="alternarLojas(${u.pk})">🏪 ${lojas.length} ${lojas.length===1?'loja':'lojas'} <span class="lojas-ca">▾</span></button></td>
@@ -2146,11 +2142,11 @@ async function excluirUsuario(pk){
 
 function exportarUsuariosExcel(){
   if(!USUARIOS.length) return alert('Nenhuma conta para exportar.');
-  const rows = [['Cadastro','Nome','CPF','Data de Nascimento','E-mail','Celular','Lojas na conta','CNPJ','Razão Social','Nome Fantasia','Associativismo','Distribuidora','E-mail validado','Celular validado','Veracidade','Autoriza contato','Aceite LGPD','Status','Total de acessos','Último acesso']];
+  const rows = [['Cadastro','Nome','E-mail','Celular','Lojas na conta','CNPJ','Razão Social','Nome Fantasia','Associativismo','Distribuidora','E-mail validado','Celular validado','Veracidade','Autoriza contato','Aceite LGPD','Status','Total de acessos','Último acesso']];
   USUARIOS.forEach(u => {
     rows.push([
       u.createdAt ? new Date(u.createdAt).toLocaleDateString('pt-BR') : '',
-      u.nomeCompleto||'', u.cpf||'', u.dataNascimento||'', u.email||'', u.celular||'',
+      u.nomeCompleto||'', u.email||'', u.celular||'',
       farmaciasDe(u).length,
       u.cnpj||'', u.razao||'', u.fantasia||'', u.associativismo||'', u.distribuidora||'',
       u.emailVerificado?'Sim':'Não', u.celularVerificado?'Sim':'Não',
