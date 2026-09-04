@@ -917,11 +917,20 @@ body{font-family:'Nunito',sans-serif;color:var(--tx);-webkit-font-smoothing:anti
             <label class="fl" for="r-email">E-mail de cadastro</label>
             <input class="fi" id="r-email" type="email" placeholder="Insira seu e-mail de cadastro"/>
           </div>
-          <div class="fg">
+          <div class="fg" id="fg-r-cnpj">
             <label class="fl" for="r-cnpj">CNPJ</label>
             <input class="fi" id="r-cnpj" type="text" inputmode="numeric" placeholder="XX.XXX.XXX/XXXX-00" maxlength="18" oninput="maskCNPJ(this)"/>
           </div>
-          <button class="btn btn-or btn-full" id="btn-rec-verificar" onclick="recuperarVerificar()">Continuar</button>
+          <button class="btn btn-or btn-full" id="btn-rec-verificar" onclick="recuperarContinuar()">Continuar</button>
+        </div>
+
+        <div id="rec-etapa-codigo" style="display:none">
+          <div class="fg">
+            <label class="fl" for="r-codigo">Código recebido por e-mail</label>
+            <input class="fi" id="r-codigo" type="text" autocomplete="one-time-code" placeholder="Ex.: A7K2M9P4" maxlength="9" style="letter-spacing:3px;text-transform:uppercase;font-weight:800" oninput="this.value=this.value.toUpperCase()"/>
+          </div>
+          <button class="btn btn-or btn-full" id="btn-rec-codigo" onclick="recuperarVerificarCodigo()">Continuar</button>
+          <button class="btn-inline" onclick="voltarEtapaEmail()">Não recebi o código</button>
         </div>
 
         <div id="rec-etapa-senha" style="display:none">
@@ -2303,11 +2312,103 @@ function limparFormCadastro(){
 }
 
 /* ============ RECUPERAÇÃO DE ACESSO ============ */
+let RECUPERACAO_MODO = 'cnpj';
+
+async function carregarModoRecuperacao(){
+  try {
+    const r = await fetch('/api/auth', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ action:'recuperar-modo' })
+    });
+    const d = await r.json().catch(()=>({}));
+    RECUPERACAO_MODO = d.modo === 'codigo' ? 'codigo' : 'cnpj';
+  } catch(e){ RECUPERACAO_MODO = 'cnpj'; }
+  aplicarModoRecuperacao();
+}
+
+function aplicarModoRecuperacao(){
+  const porCodigo = RECUPERACAO_MODO === 'codigo';
+  if($('fg-r-cnpj')) $('fg-r-cnpj').style.display = porCodigo ? 'none' : '';
+  if($('btn-rec-verificar')) $('btn-rec-verificar').textContent = porCodigo ? 'Enviar código' : 'Continuar';
+  $('rec-desc').textContent = porCodigo
+    ? 'Informe o e-mail do seu cadastro. Enviaremos um código para você criar uma nova senha.'
+    : 'Para recuperar seu acesso, confirme os dados do seu cadastro.';
+}
+
 function dadosRecuperacao(){
   return {
     email: $('r-email').value.trim(),
-    cnpj: $('r-cnpj').value.trim()
+    cnpj: $('r-cnpj') ? $('r-cnpj').value.trim() : '',
+    codigo: $('r-codigo') ? $('r-codigo').value.trim() : ''
   };
+}
+
+function recuperarContinuar(){
+  return RECUPERACAO_MODO === 'codigo' ? recuperarSolicitar() : recuperarVerificar();
+}
+
+function voltarEtapaEmail(){
+  $('rec-etapa-codigo').style.display = 'none';
+  $('rec-etapa-dados').style.display = 'block';
+  if($('r-codigo')) $('r-codigo').value = '';
+  aplicarModoRecuperacao();
+}
+
+function mostrarEtapaSenha(nomeCompleto){
+  $('rec-desc').textContent = 'Olá, ' + String(nomeCompleto||'').split(' ')[0] + '! Crie uma nova senha para o seu acesso.';
+  $('rec-etapa-dados').style.display = 'none';
+  $('rec-etapa-codigo').style.display = 'none';
+  $('rec-etapa-senha').style.display = 'block';
+  $('rec-err').classList.remove('on');
+  checarSenhaRec();
+}
+
+async function recuperarSolicitar(){
+  const email = $('r-email').value.trim();
+  if(!emailValido(email)) return showErrIn('rec','Informe um e-mail válido.');
+
+  const btn = $('btn-rec-verificar');
+  btn.disabled = true; btn.textContent = 'Enviando...';
+  try {
+    await fetch('/api/auth', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ action:'recuperar-solicitar', email })
+    });
+    // A mensagem é a mesma exista ou não a conta, para não revelar cadastros.
+    $('rec-desc').textContent = 'Se houver uma conta com esse e-mail, o código já está a caminho. Ele vale por cerca de 15 minutos.';
+    $('rec-etapa-dados').style.display = 'none';
+    $('rec-etapa-codigo').style.display = 'block';
+    $('rec-err').classList.remove('on');
+    $('r-codigo').focus();
+  } catch(e){
+    showErrIn('rec','Falha de conexão. Tente novamente.');
+  } finally {
+    btn.disabled = false; btn.textContent = 'Enviar código';
+  }
+}
+
+async function recuperarVerificarCodigo(){
+  const d = dadosRecuperacao();
+  if(d.codigo.replace(/[^A-Za-z0-9]/g,'').length !== 8) return showErrIn('rec','O código tem 8 caracteres.');
+
+  const btn = $('btn-rec-codigo');
+  btn.disabled = true; btn.textContent = 'Verificando...';
+  try {
+    const resp = await fetch('/api/auth', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ action:'recuperar-verificar', email:d.email, codigo:d.codigo })
+    });
+    const data = await resp.json().catch(()=>({}));
+    if(!resp.ok || !data.ok){ showErrIn('rec', data.error || 'Não foi possível verificar o código.'); return; }
+    mostrarEtapaSenha(data.nomeCompleto);
+  } catch(e){
+    showErrIn('rec','Falha de conexão. Tente novamente.');
+  } finally {
+    btn.disabled = false; btn.textContent = 'Continuar';
+  }
 }
 
 async function recuperarVerificar(){
@@ -2325,11 +2426,7 @@ async function recuperarVerificar(){
     });
     const data = await resp.json().catch(()=>({}));
     if(!resp.ok || !data.ok){ showErrIn('rec', data.error || 'Não foi possível verificar os dados.'); return; }
-    $('rec-desc').textContent = 'Olá, ' + String(data.nomeCompleto||'').split(' ')[0] + '! Crie uma nova senha para o seu acesso.';
-    $('rec-etapa-dados').style.display = 'none';
-    $('rec-etapa-senha').style.display = 'block';
-    $('rec-err').classList.remove('on');
-    checarSenhaRec();
+    mostrarEtapaSenha(data.nomeCompleto);
   } catch(e){
     showErrIn('rec','Falha de conexão. Tente novamente.');
   } finally {
@@ -2378,10 +2475,11 @@ async function recuperarSalvar(){
 }
 
 function resetRecuperacao(){
-  ['r-email','r-cnpj','r-senha','r-senha2'].forEach(id => { if($(id)) $(id).value=''; });
+  ['r-email','r-cnpj','r-codigo','r-senha','r-senha2'].forEach(id => { if($(id)) $(id).value=''; });
   $('rec-etapa-dados').style.display = 'block';
+  $('rec-etapa-codigo').style.display = 'none';
   $('rec-etapa-senha').style.display = 'none';
-  $('rec-desc').textContent = 'Para recuperar seu acesso, confirme os dados do seu cadastro.';
+  aplicarModoRecuperacao();
 }
 
 /* ============ SAIR ============ */
@@ -2918,6 +3016,7 @@ async function enviarEmailPedido(pedido){
 (function init(){
   renderDistribuidoras();
   irPara('login');
+  carregarModoRecuperacao();
   try{
     // Sessão ainda aberta nesta aba: volta direto para a loja.
     const s = JSON.parse(sessionStorage.getItem('gp_cliente')||'null');
