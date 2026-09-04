@@ -2,7 +2,8 @@ import type { Config } from "@netlify/functions";
 import { db } from "../../db/index.js";
 import { usuarios, clientes, consentimentosLgpd, acessos, usuarioFarmacias } from "../../db/schema.js";
 import { eq, and, asc, desc, inArray, sql } from "drizzle-orm";
-import { randomBytes, scryptSync, timingSafeEqual } from "node:crypto";
+import { createHmac, randomBytes, scryptSync, timingSafeEqual } from "node:crypto";
+import { enviarEmail } from "../lib/email.js";
 
 /* ============ SENHA ============ */
 function gerarHash(senha: string, salt?: string) {
@@ -20,6 +21,57 @@ function conferirSenha(senha: string, hash: string, salt: string) {
   } catch {
     return false;
   }
+}
+
+/* ============ CÓDIGO DE RECUPERAÇÃO DE SENHA ============ */
+/*
+ * O código é derivado por HMAC (estilo TOTP) e não precisa de tabela nova:
+ * entram na conta o e-mail, o hash da senha atual e a janela de tempo. Como o
+ * hash da senha faz parte da entrada, o código deixa de valer assim que a senha
+ * é trocada — ou seja, não dá para usar o mesmo código duas vezes.
+ */
+const CODIGO_ALFABETO = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // sem I, O, 0 e 1
+const CODIGO_TAMANHO = 8;
+const CODIGO_JANELA_MS = 15 * 60 * 1000;
+
+function segredoRecuperacao() {
+  return process.env.RECUPERACAO_SECRET || process.env.NETLIFY_DATABASE_URL || "";
+}
+
+/*
+ * O código só protege a conta se o e-mail realmente chegar ao usuário. Sem
+ * domínio validado no Resend (variável EMAIL_REMETENTE), o envio só funciona
+ * para o dono da conta do Resend, então a recuperação segue conferindo o CNPJ.
+ */
+function modoRecuperacao(): "codigo" | "cnpj" {
+  const podeEnviar = Boolean(process.env.EMAIL_REMETENTE) && Boolean(segredoRecuperacao());
+  return podeEnviar ? "codigo" : "cnpj";
+}
+
+function janelaAtual() {
+  return Math.floor(Date.now() / CODIGO_JANELA_MS);
+}
+
+function gerarCodigo(email: string, senhaHash: string, janela: number) {
+  const mac = createHmac("sha256", segredoRecuperacao())
+    .update(`${email}|${senhaHash}|${janela}`)
+    .digest();
+  let codigo = "";
+  for (let i = 0; i < CODIGO_TAMANHO; i++) codigo += CODIGO_ALFABETO[mac[i] % CODIGO_ALFABETO.length];
+  return codigo;
+}
+
+function codigoConfere(codigo: string, email: string, senhaHash: string) {
+  const limpo = String(codigo || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
+  if (limpo.length !== CODIGO_TAMANHO) return false;
+  let ok = false;
+  // Aceita a janela atual e a anterior: o código dura de 15 a 30 minutos.
+  for (const janela of [janelaAtual(), janelaAtual() - 1]) {
+    const esperado = Buffer.from(gerarCodigo(email, senhaHash, janela));
+    const informado = Buffer.from(limpo);
+    if (informado.length === esperado.length && timingSafeEqual(informado, esperado)) ok = true;
+  }
+  return ok;
 }
 
 /* ============ VALIDACOES ============ */
@@ -447,15 +499,51 @@ async function tratar(req: Request) {
     });
   }
 
-  /* ---------- RECUPERAR ACESSO (confirmação por dados cadastrais) ---------- */
+  /* ---------- RECUPERAR ACESSO ---------- */
+  if (action === "recuperar-modo") {
+    return Response.json({ ok: true, modo: modoRecuperacao() });
+  }
+
+  if (action === "recuperar-solicitar") {
+    const email = normalizarEmail(body.email);
+    if (!emailValido(email)) return erro("Informe um e-mail válido.");
+    if (modoRecuperacao() !== "codigo") return erro("Envio de código indisponível.", 400);
+
+    const [u] = await db.select().from(usuarios).where(eq(usuarios.email, email)).limit(1);
+
+    if (u && u.status === "ativo") {
+      const codigo = gerarCodigo(u.email, u.senhaHash, janelaAtual());
+      const envio = await enviarEmail(u.email, "Código para redefinir sua senha — Globo Pharma OL", {
+        "Olá": u.nomeCompleto,
+        "Código": codigo,
+        "Validade": "cerca de 15 minutos",
+        "Se não foi você": "Ignore este e-mail. Sua senha atual continua valendo e nada foi alterado.",
+      });
+      if (!envio.ok) console.error("Falha ao enviar código de recuperação:", envio.detail);
+    }
+
+    // Resposta idêntica exista ou não a conta: não revela quem tem cadastro.
+    return Response.json({ ok: true });
+  }
+
   if (action === "recuperar-verificar" || action === "recuperar-redefinir") {
     const email = normalizarEmail(body.email);
     const encontrados = await db.select().from(usuarios).where(eq(usuarios.email, email)).limit(1);
     const u = encontrados[0];
-    const confere = !!u && soDigitos(u.cnpj) === soDigitos(body.cnpj);
+    const modo = modoRecuperacao();
+    const confere =
+      !!u &&
+      (modo === "codigo"
+        ? codigoConfere(String(body.codigo || ""), u.email, u.senhaHash)
+        : soDigitos(u.cnpj) === soDigitos(body.cnpj));
 
     if (!confere) {
-      return erro("Os dados informados não conferem com nenhum cadastro. Confira ou fale com seu representante.", 401);
+      return erro(
+        modo === "codigo"
+          ? "Código inválido ou expirado. Peça um novo código."
+          : "Os dados informados não conferem com nenhum cadastro. Confira ou fale com seu representante.",
+        401
+      );
     }
     if (u.status !== "ativo") {
       return erro("Conta bloqueada. Entre em contato com o seu representante.", 403);
