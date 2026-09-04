@@ -834,16 +834,6 @@ body{font-family:'Nunito',sans-serif;color:var(--tx);-webkit-font-smoothing:anti
             <label class="fl" for="c-nome">Nome <span class="req">*</span></label>
             <input class="fi" id="c-nome" type="text" placeholder="Insira seu nome completo"/>
           </div>
-          <div class="fg-row">
-            <div class="fg">
-              <label class="fl" for="c-cpf">CPF <span class="req">*</span></label>
-              <input class="fi" id="c-cpf" type="text" inputmode="numeric" placeholder="000.000.000-00" maxlength="14" oninput="maskCPF(this)"/>
-            </div>
-            <div class="fg">
-              <label class="fl" for="c-nasc">Data de nascimento <span class="req">*</span></label>
-              <input class="fi" id="c-nasc" type="text" inputmode="numeric" placeholder="dd/mm/aaaa" maxlength="10" oninput="maskData(this)"/>
-            </div>
-          </div>
           <div class="fg">
             <label class="fl" for="c-email">E-mail <span class="req">*</span></label>
             <input class="fi" id="c-email" type="email" placeholder="email@empresa.com.br"/>
@@ -930,16 +920,6 @@ body{font-family:'Nunito',sans-serif;color:var(--tx);-webkit-font-smoothing:anti
           <div class="fg">
             <label class="fl" for="r-cnpj">CNPJ</label>
             <input class="fi" id="r-cnpj" type="text" inputmode="numeric" placeholder="XX.XXX.XXX/XXXX-00" maxlength="18" oninput="maskCNPJ(this)"/>
-          </div>
-          <div class="fg-row">
-            <div class="fg">
-              <label class="fl" for="r-cpf">CPF</label>
-              <input class="fi" id="r-cpf" type="text" inputmode="numeric" placeholder="000.000.000-00" maxlength="14" oninput="maskCPF(this)"/>
-            </div>
-            <div class="fg">
-              <label class="fl" for="r-nasc">Data de nascimento</label>
-              <input class="fi" id="r-nasc" type="text" inputmode="numeric" placeholder="dd/mm/aaaa" maxlength="10" oninput="maskData(this)"/>
-            </div>
           </div>
           <button class="btn btn-or btn-full" id="btn-rec-verificar" onclick="recuperarVerificar()">Continuar</button>
         </div>
@@ -2044,9 +2024,7 @@ function aplicarSessao(conta, farmacias){
     comprador: conta.nomeCompleto,
     telefone: conta.celular || '',
     email: conta.email,
-    associativismo: conta.associativismo || '',
-    cpf: conta.cpf || '',
-    dataNascimento: conta.dataNascimento || ''
+    associativismo: conta.associativismo || ''
   };
 
   // Sem vínculos (conta antiga), a própria farmácia do cadastro é a lista.
@@ -2190,8 +2168,6 @@ async function validarPasso(passo){
   if(passo === 2){
     const nome = $('c-nome').value.trim();
     if(nome.split(/\s+/).filter(Boolean).length < 2) return 'Informe seu nome completo.';
-    if(!cpfValido($('c-cpf').value)) return 'CPF inválido. Verifique se digitou corretamente.';
-    if(!nascimentoValido($('c-nasc').value)) return 'Data de nascimento inválida. Use o formato dd/mm/aaaa.';
     if(!emailValido($('c-email').value)) return 'E-mail deve ter formato válido.';
     if($('c-email').value.trim().toLowerCase() !== $('c-email2').value.trim().toLowerCase()) return 'Os e-mails não coincidem.';
     if(soDig($('c-cel').value).length !== 11) return 'Celular deve ter DDD + 9 dígitos.';
@@ -2261,8 +2237,6 @@ function renderResumoCadastro(){
     <div class="res-box">
       <div class="res-tit">Dados pessoais</div>
       ${linha('Nome', $('c-nome').value)}
-      ${linha('CPF', $('c-cpf').value)}
-      ${linha('Nascimento', $('c-nasc').value)}
       ${linha('E-mail', $('c-email').value)}
       ${linha('Celular', $('c-cel').value)}
     </div>
@@ -2291,8 +2265,6 @@ async function finalizarCadastro(){
         distribuidora: dist ? dist.nome : '',
         distId: dist ? dist.id : '',
         nomeCompleto: $('c-nome').value.trim(),
-        cpf: $('c-cpf').value.trim(),
-        dataNascimento: $('c-nasc').value.trim(),
         email: $('c-email').value.trim(),
         celular: $('c-cel').value.trim(),
         senha: $('c-senha').value,
@@ -2324,7 +2296,7 @@ function irParaLoginAposCadastro(){
 }
 
 function limparFormCadastro(){
-  ['c-cnpj','c-razao','c-fantasia','c-assoc','c-nome','c-cpf','c-nasc','c-email','c-email2','c-cel','c-senha','c-senha2']
+  ['c-cnpj','c-razao','c-fantasia','c-assoc','c-nome','c-email','c-email2','c-cel','c-senha','c-senha2']
     .forEach(id => { if($(id)) $(id).value=''; });
   ['c-veracidade','c-informacoes','c-termos'].forEach(id => { if($(id)) $(id).checked=false; });
   cadPasso = 1;
@@ -2334,9 +2306,7 @@ function limparFormCadastro(){
 function dadosRecuperacao(){
   return {
     email: $('r-email').value.trim(),
-    cnpj: $('r-cnpj').value.trim(),
-    cpf: $('r-cpf').value.trim(),
-    dataNascimento: $('r-nasc').value.trim()
+    cnpj: $('r-cnpj').value.trim()
   };
 }
 
@@ -2344,8 +2314,6 @@ async function recuperarVerificar(){
   const d = dadosRecuperacao();
   if(!emailValido(d.email)) return showErrIn('rec','Informe um e-mail válido.');
   if(!cnpjValido(d.cnpj)) return showErrIn('rec','CNPJ inválido.');
-  if(!cpfValido(d.cpf)) return showErrIn('rec','CPF inválido.');
-  if(!nascimentoValido(d.dataNascimento)) return showErrIn('rec','Data de nascimento inválida.');
 
   const btn = $('btn-rec-verificar');
   btn.disabled = true; btn.textContent = 'Verificando...';
@@ -2410,7 +2378,7 @@ async function recuperarSalvar(){
 }
 
 function resetRecuperacao(){
-  ['r-email','r-cnpj','r-cpf','r-nasc','r-senha','r-senha2'].forEach(id => { if($(id)) $(id).value=''; });
+  ['r-email','r-cnpj','r-senha','r-senha2'].forEach(id => { if($(id)) $(id).value=''; });
   $('rec-etapa-dados').style.display = 'block';
   $('rec-etapa-senha').style.display = 'none';
   $('rec-desc').textContent = 'Para recuperar seu acesso, confirme os dados do seu cadastro.';
