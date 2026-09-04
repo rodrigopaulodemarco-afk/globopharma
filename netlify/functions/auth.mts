@@ -187,6 +187,28 @@ async function avisarReceitaNaoConferida(dados: {
   }
 }
 
+/* Exceção manual: CNPJs liberados no painel administrativo pulam a Receita. */
+async function cnpjLiberadoManualmente(cnpj: string) {
+  const c = soDigitos(cnpj);
+  if (c.length !== 14) return false;
+  try {
+    const [cfg] = await db
+      .select({ valor: configuracoes.valor })
+      .from(configuracoes)
+      .where(eq(configuracoes.chave, "cnpjs_liberados"))
+      .limit(1);
+    if (!cfg?.valor) return false;
+    return cfg.valor
+      .split(/[\s,;]+/)
+      .map((x) => soDigitos(x))
+      .filter(Boolean)
+      .includes(c);
+  } catch (e) {
+    console.error("Falha ao ler a lista de CNPJs liberados:", e);
+    return false;
+  }
+}
+
 /* ============ VALIDACOES ============ */
 const soDigitos = (v: unknown) => String(v ?? "").replace(/\D/g, "");
 
@@ -455,7 +477,7 @@ async function tratar(req: Request) {
     // Só consulta a Receita se o CNPJ ainda estiver livre: a mensagem de "já
     // existe conta" é mais útil e evita uma consulta desnecessária.
     let receita: { consultada: boolean; motivo: string } | null = null;
-    if (cnpj.length === 14 && !cnpjEmUso) {
+    if (cnpj.length === 14 && !cnpjEmUso && !(await cnpjLiberadoManualmente(cnpj))) {
       const r = await consultarReceita(cnpj);
       receita = { consultada: r.ok, motivo: recusaPorAtividade(r) };
     }
@@ -498,9 +520,12 @@ async function tratar(req: Request) {
 
     // A checagem também roda na etapa 1 do formulário, mas é aqui que ela vale:
     // o front pode ser contornado, esta é a porta que realmente cria a conta.
-    const receita = await consultarReceita(cnpj);
-    const recusa = recusaPorAtividade(receita);
-    if (recusa) return erro(recusa, 403);
+    // CNPJ na lista de liberados pula a consulta inteira.
+    const receita = (await cnpjLiberadoManualmente(cnpj)) ? null : await consultarReceita(cnpj);
+    if (receita) {
+      const recusa = recusaPorAtividade(receita);
+      if (recusa) return erro(recusa, 403);
+    }
 
     const { hash, salt } = gerarHash(senha);
 
@@ -571,7 +596,7 @@ async function tratar(req: Request) {
       console.error("Falha ao registrar consentimento LGPD:", e);
     }
 
-    if (!receita.ok) {
+    if (receita && !receita.ok) {
       console.error(`Cadastro sem confirmação da Receita: CNPJ ${soDigitos(cnpj)} (${receita.motivo})`);
       await avisarReceitaNaoConferida({
         cnpj,
