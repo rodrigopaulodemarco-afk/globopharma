@@ -1,7 +1,7 @@
 import type { Config } from "@netlify/functions";
 import { db } from "../../db/index.js";
 import { usuarios, clientes, consentimentosLgpd, acessos, usuarioFarmacias } from "../../db/schema.js";
-import { eq, ne, and, asc, desc, inArray, sql } from "drizzle-orm";
+import { eq, and, asc, desc, inArray, sql } from "drizzle-orm";
 import { createHmac, randomBytes, scryptSync, timingSafeEqual } from "node:crypto";
 import { enviarEmail } from "../lib/email.js";
 
@@ -496,28 +496,6 @@ async function tratar(req: Request) {
       ok: true,
       usuario: semSegredos({ ...u, totalAcessos: (u.totalAcessos || 0) + 1 }),
       farmacias,
-    });
-  }
-
-  /* ---------- LIMPEZA PONTUAL DE CPF (temporário — remover após o uso) ---------- */
-  if (action === "limpar-cpf") {
-    const comCpfUsuarios = await db.select({ pk: usuarios.pk }).from(usuarios).where(ne(usuarios.cpf, ""));
-    const comCpfClientes = await db.select({ pk: clientes.pk }).from(clientes).where(ne(clientes.cpf, ""));
-
-    if (comCpfUsuarios.length) {
-      await db.update(usuarios).set({ cpf: "", updatedAt: new Date() }).where(ne(usuarios.cpf, ""));
-    }
-    if (comCpfClientes.length) {
-      await db.update(clientes).set({ cpf: "", updatedAt: new Date() }).where(ne(clientes.cpf, ""));
-    }
-
-    const restamUsuarios = await db.select({ pk: usuarios.pk }).from(usuarios).where(ne(usuarios.cpf, ""));
-    const restamClientes = await db.select({ pk: clientes.pk }).from(clientes).where(ne(clientes.cpf, ""));
-
-    return Response.json({
-      ok: true,
-      limpos: { usuarios: comCpfUsuarios.length, clientes: comCpfClientes.length },
-      restam: { usuarios: restamUsuarios.length, clientes: restamClientes.length },
     });
   }
 
