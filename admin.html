@@ -67,11 +67,71 @@ body{font-family:'Nunito',sans-serif;color:var(--tx);background:var(--bg);-webki
 .topbar-r{display:flex;align-items:center;gap:10px;color:#fff;font-size:12.5px}
 .btn-logout{background:rgba(255,255,255,.18);border:none;border-radius:50px;padding:7px 16px;color:#fff;font-family:'Nunito';font-weight:800;font-size:12px;cursor:pointer}
 .btn-logout:hover{background:rgba(255,255,255,.35)}
-.tabs-row{background:var(--wh);border-bottom:1px solid var(--bd);padding:0 24px;display:flex;gap:6px;overflow-x:auto;position:sticky;top:64px;z-index:40;scrollbar-width:none}
-.tabs-row::-webkit-scrollbar{display:none}
-.tabbtn{background:transparent;border:none;padding:14px 20px;font-family:'Nunito';font-size:13px;font-weight:800;color:var(--tx2);cursor:pointer;border-bottom:3px solid transparent;white-space:nowrap;display:inline-flex;align-items:center;gap:6px}
-.tabbtn:hover{color:var(--or)}
-.tabbtn.on{color:var(--or);border-bottom-color:var(--or)}
+/* Menu lateral */
+.side{position:fixed;left:0;top:64px;bottom:0;width:250px;background:var(--or);z-index:45;display:flex;flex-direction:column;overflow-y:auto;transition:transform .22s}
+.side::-webkit-scrollbar{width:6px}
+.side::-webkit-scrollbar-thumb{background:rgba(255,255,255,.3);border-radius:6px}
+.side-user{display:flex;align-items:center;gap:11px;padding:18px;border-bottom:1px solid rgba(255,255,255,.2)}
+.side-ava{width:42px;height:42px;border-radius:50%;background:rgba(255,255,255,.22);display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;font-size:15px;color:#fff;flex:none}
+.side-user-n{font-size:12.5px;font-weight:900;color:#fff;line-height:1.25}
+.side-user-s{font-size:10.5px;color:rgba(255,255,255,.8);font-weight:700;margin-top:2px}
+.side-grp{font-size:10px;font-weight:900;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.66);padding:16px 18px 6px}
+.side .tabbtn{width:100%;background:transparent;border:none;border-left:3px solid transparent;padding:10px 18px;font-family:'Nunito',sans-serif;font-size:13px;font-weight:800;color:rgba(255,255,255,.93);cursor:pointer;display:flex;align-items:center;gap:11px;text-align:left;transition:.15s}
+.side .tabbtn svg{width:17px;height:17px;flex:none;opacity:.92}
+.side .tabbtn:hover{background:rgba(0,0,0,.12);color:#fff}
+.side .tabbtn.on{background:rgba(0,0,0,.22);border-left-color:#fff;color:#fff}
+.side-foot{margin-top:auto;padding:14px 18px 20px;border-top:1px solid rgba(255,255,255,.2)}
+.side-foot a{color:rgba(255,255,255,.88);font-size:12px;font-weight:800;text-decoration:none;display:flex;align-items:center;gap:9px;padding:7px 0}
+.side-foot a svg{width:16px;height:16px}
+.side-foot a:hover{color:#fff}
+.hamb{display:none;background:rgba(255,255,255,.16);border:none;border-radius:10px;width:36px;height:36px;color:#fff;cursor:pointer;margin-right:6px;align-items:center;justify-content:center}
+.hamb svg{width:18px;height:18px}
+.side-ov{display:none;position:fixed;left:0;right:0;top:64px;bottom:0;background:rgba(0,0,0,.45);z-index:44}
+.tab.on{display:block;padding-left:250px}
+@media(max-width:960px){
+  .hamb{display:inline-flex}
+  .side{transform:translateX(-100%)}
+  .side.open{transform:none;box-shadow:0 0 40px rgba(0,0,0,.34)}
+  .side-ov.on{display:block}
+  .tab.on{padding-left:0}
+}
+/* Dashboard */
+.crumb{font-size:11px;font-weight:900;color:var(--tx3);letter-spacing:.07em;text-transform:uppercase;margin-bottom:7px}
+.kgrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:16px}
+@media(max-width:1180px){.kgrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:560px){.kgrid{grid-template-columns:1fr}}
+.kcard{background:var(--wh);border:.5px solid var(--bd);border-radius:var(--rm);overflow:hidden}
+.kcard-top{padding:16px 18px 15px}
+.kcard-lbl{display:flex;align-items:center;gap:8px;font-size:10.5px;font-weight:900;color:var(--tx2);text-transform:uppercase;letter-spacing:.06em}
+.kcard-lbl svg{width:15px;height:15px;color:var(--tx3);flex:none}
+.kcard-val{font-family:'Syne',sans-serif;font-size:26px;font-weight:800;color:var(--tx);margin-top:9px;line-height:1.1}
+.kcard-foot{border-top:1px solid var(--bd);background:#FCFAF8;padding:9px 18px;font-size:11px;font-weight:800;color:var(--tx3)}
+.kcard-foot .d-up{color:var(--gr)}
+.kcard-foot .d-dn{color:var(--re)}
+.kcard-foot .d-fl{color:var(--tx3)}
+.cat-strip{display:flex;flex-wrap:wrap;align-items:center;gap:10px 28px;background:var(--wh);border:.5px solid var(--bd);border-radius:var(--rm);padding:13px 18px;margin-bottom:16px;font-size:12px;font-weight:700;color:var(--tx2)}
+.cat-strip span b{font-family:'Syne',sans-serif;font-weight:800;color:var(--tx);font-size:13.5px;margin-right:4px}
+.cat-strip .cat-tit{font-size:10.5px;font-weight:900;text-transform:uppercase;letter-spacing:.06em;color:var(--tx3)}
+.dash-2{display:grid;grid-template-columns:minmax(0,1fr) 322px;gap:16px;margin-bottom:18px;align-items:start}
+@media(max-width:1180px){.dash-2{grid-template-columns:1fr}}
+.chart-wrap{position:relative;margin-top:6px}
+.chart-wrap svg{display:block;width:100%;height:auto;overflow:visible}
+.chart-empty{padding:52px 12px;text-align:center;color:var(--tx3);font-size:13px;font-weight:700}
+.ctip{position:absolute;pointer-events:none;background:#1A1208;color:#fff;border-radius:10px;padding:8px 11px;font-size:11.5px;font-weight:700;line-height:1.55;white-space:nowrap;opacity:0;transition:opacity .12s;transform:translate(-50%,-116%);box-shadow:0 8px 22px rgba(0,0,0,.28);z-index:5}
+.ctip.on{opacity:1}
+.ctip b{font-family:'Syne',sans-serif;font-weight:800}
+.rank-h{font-size:10.5px;font-weight:900;text-transform:uppercase;letter-spacing:.06em;color:var(--tx3)}
+.rank-m{font-family:'Syne',sans-serif;font-size:17px;font-weight:800;color:var(--tx);margin:2px 0 9px}
+.rank-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px solid var(--bd);font-size:12.5px;font-weight:700;color:var(--tx2)}
+.rank-row:last-child{border-bottom:none}
+.rank-row b{font-family:'Syne',sans-serif;font-weight:800;color:var(--tx)}
+.rank-sep{height:1px;background:var(--bd);margin:18px 0}
+@media(max-width:640px){
+  .brand-sub{display:none}
+  .brand-name{font-size:14px}
+  .brand-mark{width:58px;height:34px}
+  .topbar-r a{display:none}
+}
 .pad{padding:22px 24px;max-width:1400px;margin:0 auto}
 .pad-narrow{padding:22px 24px;max-width:980px;margin:0 auto}
 .tab{display:none}.tab.on{display:block}
@@ -80,8 +140,8 @@ body{font-family:'Nunito',sans-serif;color:var(--tx);background:var(--bg);-webki
 .cards-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-bottom:22px}
 .kpi{background:var(--wh);border:.5px solid var(--bd);border-radius:var(--rm);padding:16px 18px}
 .kpi-lbl{font-size:11px;font-weight:800;color:var(--tx2);text-transform:uppercase;letter-spacing:.05em}
-.kpi-val{font-family:'Syne',sans-serif;font-size:26px;font-weight:800;color:var(--or);margin-top:4px}
-.kpi-val.gr{color:var(--gr)}.kpi-val.pr{color:var(--pr-d)}.kpi-val.bl{color:var(--bl)}
+.kpi-val{font-family:'Syne',sans-serif;font-size:26px;font-weight:800;color:var(--tx);margin-top:4px}
+.kpi-val.gr,.kpi-val.pr,.kpi-val.bl{color:var(--tx)}
 .kpi-sub{font-size:11px;color:var(--tx2);font-weight:700;margin-top:3px}
 /* ---- lojas (CNPJs) sob uma mesma conta ---- */
 .lojas-bt{border:2px solid var(--bd);background:var(--wh);color:var(--tx2);border-radius:50px;padding:3px 10px;font-family:'Nunito',sans-serif;font-weight:800;font-size:11px;cursor:pointer;white-space:nowrap;transition:all .15s}
@@ -197,6 +257,7 @@ table.tbl{width:100%;border-collapse:collapse;font-size:12.5px;min-width:1100px}
 <div id="admin-screen">
   <header class="topbar">
     <div class="brand">
+      <button class="hamb" onclick="toggleSide()" aria-label="Menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg></button>
       <div class="brand-mark"><img src="assets/logo-globopharma.png" alt="Globo Pharma"></div>
       <div><div class="brand-name">Globo Pharma OL · Admin</div><div class="brand-sub">Portal do Distribuidor</div></div>
     </div>
@@ -206,60 +267,94 @@ table.tbl{width:100%;border-collapse:collapse;font-size:12.5px;min-width:1100px}
     </div>
   </header>
 
-  <nav class="tabs-row">
-    <button class="tabbtn on" data-tab="dashboard" onclick="goTab('dashboard')">📊 Dashboard</button>
-    <button class="tabbtn" data-tab="pedidos" onclick="goTab('pedidos')">📋 Pedidos</button>
-    <button class="tabbtn" data-tab="produtos" onclick="goTab('produtos')">📦 Produtos</button>
-    <button class="tabbtn" data-tab="upload" onclick="goTab('upload')">📤 Upload Excel</button>
-    <button class="tabbtn" data-tab="acessos" onclick="goTab('acessos')">👥 Log de Acessos</button>
-    <button class="tabbtn" data-tab="lgpd" onclick="goTab('lgpd')">🔒 LGPD</button>
-    <button class="tabbtn" data-tab="clientes" onclick="goTab('clientes')">🏢 Clientes</button>
-    <button class="tabbtn" data-tab="contas" onclick="goTab('contas')">🔐 Contas de Acesso</button>
-    <button class="tabbtn" data-tab="config" onclick="goTab('config')">⚙️ Configurações</button>
+  <div class="side-ov" id="side-ov" onclick="toggleSide(false)"></div>
+  <nav class="side" id="side">
+    <div class="side-user">
+      <div class="side-ava">GP</div>
+      <div><div class="side-user-n">Administração</div><div class="side-user-s">Globo Pharma OL</div></div>
+    </div>
+    <div class="side-grp">Painel</div>
+    <button class="tabbtn on" data-tab="dashboard" onclick="goTab('dashboard')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg><span>Dashboard</span></button>
+    <button class="tabbtn" data-tab="pedidos" onclick="goTab('pedidos')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4H6a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-2"/><rect x="8" y="2" width="8" height="4" rx="1.5"/><path d="M8 12h8M8 16h5"/></svg><span>Pedidos</span></button>
+    <div class="side-grp">Catálogo</div>
+    <button class="tabbtn" data-tab="produtos" onclick="goTab('produtos')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8 12 3 3 8l9 5 9-5Z"/><path d="M3 8v8l9 5 9-5V8"/><path d="M12 13v8"/></svg><span>Produtos</span></button>
+    <button class="tabbtn" data-tab="upload" onclick="goTab('upload')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m17 8-5-5-5 5"/><path d="M12 3v13"/></svg><span>Upload Excel</span></button>
+    <div class="side-grp">Clientes</div>
+    <button class="tabbtn" data-tab="clientes" onclick="goTab('clientes')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V7l7-4 7 4v14"/><path d="M10 21v-6h4v6"/></svg><span>Clientes</span></button>
+    <button class="tabbtn" data-tab="contas" onclick="goTab('contas')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="4"/><path d="M2 21v-1a6 6 0 0 1 6-6h3"/><path d="m14 17 2 2 4-4"/></svg><span>Contas de Acesso</span></button>
+    <button class="tabbtn" data-tab="acessos" onclick="goTab('acessos')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg><span>Log de Acessos</span></button>
+    <button class="tabbtn" data-tab="lgpd" onclick="goTab('lgpd')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/><path d="m9 12 2 2 4-4"/></svg><span>LGPD</span></button>
+    <div class="side-grp">Sistema</div>
+    <button class="tabbtn" data-tab="config" onclick="goTab('config')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.2"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/></svg><span>Configurações</span></button>
+    <div class="side-foot">
+      <a href="loja.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/><path d="M2 3h3l2.4 11.4a2 2 0 0 0 2 1.6h8.2a2 2 0 0 0 2-1.6L21 7H6"/></svg><span>Abrir a loja</span></a>
+      <a href="#" onclick="doLogout();return false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/></svg><span>Sair</span></a>
+    </div>
   </nav>
 
   <!-- DASHBOARD -->
   <section class="tab on" id="tab-dashboard">
     <div class="pad">
+      <div class="crumb">Painel · Home</div>
       <div class="section-title">Dashboard</div>
-      <div class="section-sub">Visão geral do catálogo e acessos.</div>
-      <div class="cards-grid">
-        <div class="kpi"><div class="kpi-lbl">Produtos cadastrados</div><div class="kpi-val" id="k-prod">0</div><div class="kpi-sub" id="k-prod-sub">—</div></div>
-        <div class="kpi"><div class="kpi-lbl">Em estoque</div><div class="kpi-val gr" id="k-stk">0</div><div class="kpi-sub">de <span id="k-stk-tot">0</span> produtos</div></div>
-        <div class="kpi"><div class="kpi-lbl">Em promoção</div><div class="kpi-val pr" id="k-prm">0</div><div class="kpi-sub">destacados na loja</div></div>
-        <div class="kpi"><div class="kpi-lbl">Pedidos recebidos</div><div class="kpi-val" id="k-ped">0</div><div class="kpi-sub" id="k-ped-sub">— hoje</div></div>
-        <div class="kpi"><div class="kpi-lbl">Acessos (30 dias)</div><div class="kpi-val bl" id="k-acc">0</div><div class="kpi-sub" id="k-acc-uniq">— únicos</div></div>
-        <div class="kpi"><div class="kpi-lbl">Contas de acesso</div><div class="kpi-val" id="k-cta">0</div><div class="kpi-sub" id="k-cta-sub">— ativas</div></div>
-      </div>
-      <div class="panel">
-        <h3>🚀 Atalhos</h3>
-        <div class="actions" style="justify-content:flex-start">
-          <button class="btn btn-or" onclick="goTab('pedidos')">📋 Ver Pedidos</button>
-          <button class="btn btn-bl" onclick="goTab('produtos')">📦 Produtos</button>
-          <button class="btn btn-bl" onclick="goTab('upload')">📤 Upload Excel</button>
-          <button class="btn btn-gr" onclick="goTab('acessos')">👥 Acessos</button>
-          <button class="btn btn-ghost" onclick="goTab('clientes')">🏢 Clientes</button>
-          <button class="btn btn-ghost" onclick="goTab('contas')">🔐 Contas</button>
-          <button class="btn btn-ghost" onclick="downloadTemplate()">📥 Template</button>
+      <div class="section-sub">Desempenho do mês atual, comparado com o mês anterior.</div>
+      <div class="kgrid">
+        <div class="kcard">
+          <div class="kcard-top">
+            <div class="kcard-lbl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4H6a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-2"/><rect x="8" y="2" width="8" height="4" rx="1.5"/><path d="M8 12h8M8 16h5"/></svg><span>Pedidos no mês</span></div>
+            <div class="kcard-val" id="k-ped">—</div>
+          </div>
+          <div class="kcard-foot"><span id="k-ped-d" class="d-fl">—</span></div>
+        </div>
+        <div class="kcard">
+          <div class="kcard-top">
+            <div class="kcard-lbl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20"/><path d="M17 6.5c0-1.9-2.2-3-5-3s-5 1.1-5 3 2.2 2.8 5 3.2 5 1.3 5 3.3-2.2 3-5 3-5-1.1-5-3"/></svg><span>Valor vendido</span></div>
+            <div class="kcard-val" id="k-val">—</div>
+          </div>
+          <div class="kcard-foot"><span id="k-val-d" class="d-fl">—</span></div>
+        </div>
+        <div class="kcard">
+          <div class="kcard-top">
+            <div class="kcard-lbl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9V7a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v2a2.5 2.5 0 0 0 0 6v2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-2a2.5 2.5 0 0 0 0-6Z"/><path d="M14 5v3M14 16v3"/></svg><span>Ticket médio</span></div>
+            <div class="kcard-val" id="k-tkt">—</div>
+          </div>
+          <div class="kcard-foot"><span id="k-tkt-d" class="d-fl">—</span></div>
+        </div>
+        <div class="kcard">
+          <div class="kcard-top">
+            <div class="kcard-lbl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V7l7-4 7 4v14"/><path d="M10 21v-6h4v6"/></svg><span>Farmácias que compraram</span></div>
+            <div class="kcard-val" id="k-cli">—</div>
+          </div>
+          <div class="kcard-foot"><span id="k-cli-d" class="d-fl">—</span></div>
         </div>
       </div>
-      <div class="panel">
-        <h3>📋 Como funciona</h3>
-        <div class="formula-box">
-          <b>📐 Fórmulas oficiais de preço:</b><br>
-          <code>Preço Líquido = PF × (1 − Desconto%)</code><br>
-          <code>Com PMPF: ST = (PMPF − Preço Líquido) × 0,17</code><br>
-          <code>Sem PMPF: ST = Preço Líquido × 0,656 × 0,17</code><br>
-          <code>Preço Final = Preço Líquido + ST</code>
+      <div class="cat-strip">
+        <span class="cat-tit">Catálogo</span>
+        <span><b id="c-prod">0</b>produtos</span>
+        <span><b id="c-stk">0</b>em estoque</span>
+        <span><b id="c-prm">0</b>em promoção</span>
+        <span><b id="c-cta">0</b>contas ativas</span>
+        <span><b id="c-acc">0</b>acessos em 30 dias</span>
+      </div>
+      <div class="dash-2">
+        <div class="panel" style="margin-bottom:0">
+          <h3>Evolução de vendas</h3>
+          <div class="section-sub" style="margin-bottom:0">Valor total dos pedidos recebidos nos últimos 12 meses.</div>
+          <div class="chart-wrap" id="chart-vendas"></div>
+        </div>
+        <div class="panel" style="margin-bottom:0">
+          <h3>Picos do período</h3>
+          <div id="rank-vendas" style="margin-top:14px"></div>
         </div>
       </div>
+
     </div>
   </section>
 
   <!-- PEDIDOS -->
   <section class="tab" id="tab-pedidos">
     <div class="pad">
-      <div class="section-title">📋 Pedidos recebidos</div>
+      <div class="section-title">Pedidos recebidos</div>
       <div class="section-sub">Todos os pedidos enviados pela loja. O envio para email é automático — aqui você consulta, baixa e re-exporta.</div>
       <div class="cards-grid">
         <div class="kpi"><div class="kpi-lbl">Pedidos totais</div><div class="kpi-val" id="kp-tot">0</div></div>
@@ -302,7 +397,16 @@ table.tbl{width:100%;border-collapse:collapse;font-size:12.5px;min-width:1100px}
   <!-- PRODUTOS -->
   <section class="tab" id="tab-produtos">
     <div class="pad">
-      <div class="section-title">📦 Produtos</div>
+      <details class="panel" style="padding:14px 20px;margin-bottom:16px">
+        <summary style="cursor:pointer;font-family:'Syne',sans-serif;font-size:14px;font-weight:800">Fórmulas oficiais de preço</summary>
+        <div class="formula-box" style="margin-top:12px">
+          <code>Preço Líquido = PF × (1 − Desconto%)</code><br>
+          <code>Com PMPF: ST = (PMPF − Preço Líquido) × 0,17</code><br>
+          <code>Sem PMPF: ST = Preço Líquido × 0,656 × 0,17</code><br>
+          <code>Preço Final = Preço Líquido + ST</code>
+        </div>
+      </details>
+      <div class="section-title">Produtos</div>
       <div class="section-sub">Edite Desconto, Promoção e Estoque por produto, inclua novos itens ou exclua os que saíram de linha. As alterações se aplicam imediatamente à Loja.</div>
       <div class="panel">
         <div class="toolbar">
@@ -352,7 +456,7 @@ table.tbl{width:100%;border-collapse:collapse;font-size:12.5px;min-width:1100px}
   <!-- UPLOAD -->
   <section class="tab" id="tab-upload">
     <div class="pad-narrow">
-      <div class="section-title">📤 Carregar Excel</div>
+      <div class="section-title">Carregar Excel</div>
       <div class="section-sub">Faça upload de uma planilha .xlsx para atualizar todos os produtos de uma vez.</div>
       <div class="panel">
         <h3>📋 Formato esperado</h3>
@@ -401,7 +505,7 @@ table.tbl{width:100%;border-collapse:collapse;font-size:12.5px;min-width:1100px}
   <!-- ACESSOS -->
   <section class="tab" id="tab-acessos">
     <div class="pad">
-      <div class="section-title">👥 Log de acessos à loja</div>
+      <div class="section-title">Log de acessos à loja</div>
       <div class="section-sub">Histórico dos clientes que acessaram a loja nos últimos 30 dias. Acessos mais antigos são removidos automaticamente.</div>
       <div class="cards-grid">
         <div class="kpi"><div class="kpi-lbl">Acessos totais (30d)</div><div class="kpi-val bl" id="a-tot">0</div></div>
@@ -438,7 +542,7 @@ table.tbl{width:100%;border-collapse:collapse;font-size:12.5px;min-width:1100px}
   <!-- CLIENTES -->
   <section class="tab" id="tab-clientes">
     <div class="pad">
-      <div class="section-title">🏢 Cadastro de Clientes</div>
+      <div class="section-title">Cadastro de Clientes</div>
       <div class="section-sub">Base de clientes registrados automaticamente a partir dos pedidos. Consulte histórico de compras, exporte dados em Excel.</div>
       <div class="cards-grid">
         <div class="kpi"><div class="kpi-lbl">Clientes cadastrados</div><div class="kpi-val" id="kc-tot">0</div></div>
@@ -478,7 +582,7 @@ table.tbl{width:100%;border-collapse:collapse;font-size:12.5px;min-width:1100px}
   <!-- CONTAS DE ACESSO -->
   <section class="tab" id="tab-contas">
     <div class="pad">
-      <div class="section-title">🔐 Contas de Acesso à Loja</div>
+      <div class="section-title">Contas de Acesso à Loja</div>
       <div class="section-sub">Contas criadas pelos clientes no cadastro da loja. Aqui você confere os dados informados, valida e-mail e celular, bloqueia acessos e redefine senhas.</div>
       <div class="cards-grid">
         <div class="kpi"><div class="kpi-lbl">Contas cadastradas</div><div class="kpi-val" id="ku-tot">0</div></div>
@@ -535,7 +639,7 @@ table.tbl{width:100%;border-collapse:collapse;font-size:12.5px;min-width:1100px}
   <!-- LGPD -->
   <section class="tab" id="tab-lgpd">
     <div class="pad">
-      <div class="section-title">🔒 Consentimentos LGPD</div>
+      <div class="section-title">Consentimentos LGPD</div>
       <div class="section-sub">Historico de aceites dos Termos de Uso e Politica de Privacidade pelos clientes. Registros armazenados para conformidade com a LGPD (Lei 13.709/2018).</div>
       <div class="cards-grid">
         <div class="kpi"><div class="kpi-lbl">Total de consentimentos</div><div class="kpi-val" id="lgpd-tot">0</div></div>
@@ -569,7 +673,7 @@ table.tbl{width:100%;border-collapse:collapse;font-size:12.5px;min-width:1100px}
   <!-- CONFIG -->
   <section class="tab" id="tab-config">
     <div class="pad-narrow">
-      <div class="section-title">⚙️ Configurações</div>
+      <div class="section-title">Configurações</div>
       <div class="section-sub">Senha, pedido mínimo e dados de sistema.</div>
       <div class="panel">
         <h3>🛒 Pedido Mínimo da Loja</h3>
@@ -841,27 +945,171 @@ function goTab(t){
 }
 
 /* ============ DASHBOARD ============ */
+const MESES_ABR = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+
+function toggleSide(estado){
+  const s = $('side'), o = $('side-ov');
+  const abrir = (estado === undefined) ? !s.classList.contains('open') : estado;
+  s.classList.toggle('open', abrir);
+  o.classList.toggle('on', abrir);
+}
+
+/* Agrupa os pedidos nos últimos N meses, do mais antigo para o mais recente. */
+function serieMensal(peds, meses){
+  const hoje = new Date();
+  const linha = [], indice = {};
+  for(let i = meses - 1; i >= 0; i--){
+    const d = new Date(hoje.getFullYear(), hoje.getMonth() - i, 1);
+    const chave = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2,'0');
+    indice[chave] = linha.length;
+    linha.push({ chave, rotulo: MESES_ABR[d.getMonth()] + '/' + String(d.getFullYear()).slice(2), valor: 0, pedidos: 0, cnpjs: new Set() });
+  }
+  peds.forEach(p => {
+    const d = new Date(p.ts);
+    const chave = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2,'0');
+    if(!(chave in indice)) return;
+    const m = linha[indice[chave]];
+    m.valor += Number((p.totais && p.totais.total) || 0);
+    m.pedidos += 1;
+    const c = String((p.cliente && p.cliente.cnpj) || '').replace(/\D/g,'');
+    if(c) m.cnpjs.add(c);
+  });
+  return linha.map(m => ({ chave:m.chave, rotulo:m.rotulo, valor:m.valor, pedidos:m.pedidos, clientes:m.cnpjs.size }));
+}
+
+function moedaCurta(v){
+  if(v >= 1000000) return 'R$ ' + (v/1000000).toFixed(1).replace('.',',') + ' mi';
+  if(v >= 1000) return 'R$ ' + (v/1000).toFixed(v >= 10000 ? 0 : 1).replace('.',',') + ' mil';
+  return 'R$ ' + Math.round(v);
+}
+
+/* Rodapé do card: variação contra o mês anterior. Seta + sinal, nunca só cor. */
+function variacao(id, atual, anterior){
+  const el = $(id + '-d');
+  if(!el) return;
+  if(!anterior){
+    el.className = 'd-fl';
+    el.textContent = atual > 0 ? 'sem movimento no mês anterior' : 'sem base de comparação';
+    return;
+  }
+  const pct = ((atual - anterior) / anterior) * 100;
+  if(Math.abs(pct) < 0.05){ el.className = 'd-fl'; el.textContent = '= estável vs. mês anterior'; return; }
+  const sobe = pct > 0;
+  el.className = sobe ? 'd-up' : 'd-dn';
+  el.textContent = (sobe ? '▲ +' : '▼ −') + Math.abs(pct).toFixed(1).replace('.',',') + '% vs. mês anterior';
+}
+
 function refreshDashboard(){
-  $('k-prod').textContent = PRODUTOS.length;
-  const cad = PRODUTOS.filter(p=>p.cad).length;
-  $('k-prod-sub').textContent = cad+' cadastrados na Pharmalog';
-  const stk = PRODUTOS.filter(p=>p.estoque).length;
-  $('k-stk').textContent = stk;
-  $('k-stk-tot').textContent = PRODUTOS.length;
-  $('k-prm').textContent = PRODUTOS.filter(p=>p.promo).length;
-  const acs = getAcessos();
-  $('k-acc').textContent = acs.length;
-  const uniq = new Set(acs.map(a => (a.cnpj||a.telefone||a.nome||'').toLowerCase())).size;
-  $('k-acc-uniq').textContent = uniq + ' clientes únicos';
-  // Pedidos
-  const peds = getPedidos();
-  const hojeIni = (() => { const d = new Date(); d.setHours(0,0,0,0); return d.getTime(); })();
-  $('k-ped').textContent = peds.length;
-  const hoje = peds.filter(p=>p.ts>=hojeIni).length;
-  $('k-ped-sub').textContent = hoje + ' hoje';
-  // Contas de acesso
-  $('k-cta').textContent = USUARIOS.length;
-  $('k-cta-sub').textContent = USUARIOS.filter(u => u.status === 'ativo').length + ' ativas';
+  const peds = Array.isArray(getPedidos()) ? getPedidos() : [];
+  const serie = serieMensal(peds, 12);
+  const mes = serie[serie.length - 1];
+  const ant = serie[serie.length - 2] || { valor:0, pedidos:0, clientes:0 };
+  const ticket = mes.pedidos ? mes.valor / mes.pedidos : 0;
+  const ticketAnt = ant.pedidos ? ant.valor / ant.pedidos : 0;
+
+  $('k-ped').textContent = mes.pedidos;
+  $('k-val').textContent = fmtBR(mes.valor);
+  $('k-tkt').textContent = fmtBR(ticket);
+  $('k-cli').textContent = mes.clientes;
+  variacao('k-ped', mes.pedidos, ant.pedidos);
+  variacao('k-val', mes.valor, ant.valor);
+  variacao('k-tkt', ticket, ticketAnt);
+  variacao('k-cli', mes.clientes, ant.clientes);
+
+  // As listas chegam por fetch: se alguma ainda não veio, a faixa mostra 0 em
+  // vez de derrubar o resto do dashboard.
+  const lista = v => Array.isArray(v) ? v : [];
+  const prods = lista(PRODUTOS), contas = lista(USUARIOS), acs = lista(getAcessos());
+  $('c-prod').textContent = prods.length;
+  $('c-stk').textContent = prods.filter(p=>p.estoque).length;
+  $('c-prm').textContent = prods.filter(p=>p.promo).length;
+  $('c-cta').textContent = contas.filter(u => u.status === 'ativo').length;
+  $('c-acc').textContent = acs.length;
+
+  renderEvolucao(serie);
+  renderPicos(serie);
+}
+
+function renderEvolucao(serie){
+  const wrap = $('chart-vendas');
+  if(!wrap) return;
+  const teto = Math.max.apply(null, serie.map(m=>m.valor));
+  if(!teto){
+    wrap.innerHTML = '<div class="chart-empty">Ainda não há pedidos suficientes para montar a evolução.</div>';
+    return;
+  }
+
+  const W=900, H=320, L=68, R=18, T=26, B=40;
+  const iw = W-L-R, ih = H-T-B, topo = teto*1.18;
+  const px = i => L + (iw*i)/(serie.length-1);
+  const py = v => T + ih - (v/topo)*ih;
+
+  let grade='', eixoY='';
+  for(let g=0; g<=4; g++){
+    const v = topo*g/4, y = py(v);
+    grade += '<line x1="'+L+'" y1="'+y.toFixed(1)+'" x2="'+(W-R)+'" y2="'+y.toFixed(1)+'" stroke="#EDE6DD" stroke-width="1"/>';
+    eixoY += '<text x="'+(L-12)+'" y="'+(y+4).toFixed(1)+'" text-anchor="end" font-size="11" font-weight="700" fill="#B0A89E">'+(g?moedaCurta(v):'0')+'</text>';
+  }
+
+  const pts = serie.map((m,i)=>[px(i), py(m.valor)]);
+  const linha = pts.map((p,i)=>(i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' ');
+  const area = linha+' L '+pts[pts.length-1][0].toFixed(1)+' '+(T+ih)+' L '+pts[0][0].toFixed(1)+' '+(T+ih)+' Z';
+
+  const iMax = serie.reduce((a,m,i)=> m.valor > serie[a].valor ? i : a, 0);
+
+  let eixoX='', marcas='', alvos='';
+  serie.forEach((m,i)=>{
+    eixoX += '<text x="'+pts[i][0].toFixed(1)+'" y="'+(H-14)+'" text-anchor="middle" font-size="11" font-weight="700" fill="#7A6E64">'+m.rotulo+'</text>';
+    const destaque = i === iMax;
+    marcas += '<circle cx="'+pts[i][0].toFixed(1)+'" cy="'+pts[i][1].toFixed(1)+'" r="'+(destaque?5.5:4)+'" fill="'+(destaque?'#E8440A':'#fff')+'" stroke="#E8440A" stroke-width="2"/>';
+    alvos += '<rect x="'+(pts[i][0]-iw/(serie.length*2)).toFixed(1)+'" y="'+T+'" width="'+(iw/serie.length).toFixed(1)+'" height="'+ih+'" fill="transparent" data-i="'+i+'"/>';
+  });
+
+  const rotuloMax = '<text x="'+pts[iMax][0].toFixed(1)+'" y="'+(pts[iMax][1]-14).toFixed(1)+'" text-anchor="middle" font-size="12" font-weight="800" fill="#1A1208">'+fmtBR(serie[iMax].valor)+'</text>';
+
+  wrap.innerHTML =
+    '<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Valor vendido por mês nos últimos 12 meses">'
+    + grade + eixoY
+    + '<path d="'+area+'" fill="#E8440A" fill-opacity="0.07"/>'
+    + '<path d="'+linha+'" fill="none" stroke="#E8440A" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>'
+    + '<line id="cx-linha" x1="0" y1="'+T+'" x2="0" y2="'+(T+ih)+'" stroke="#B0A89E" stroke-width="1" stroke-dasharray="4 4" opacity="0"/>'
+    + marcas + rotuloMax + eixoX
+    + '<g id="cx-alvos">'+alvos+'</g>'
+    + '</svg>'
+    + '<div class="ctip" id="ctip"></div>';
+
+  const tip = $('ctip'), cx = wrap.querySelector('#cx-linha');
+  wrap.querySelectorAll('#cx-alvos rect').forEach(r => {
+    r.addEventListener('mouseenter', () => {
+      const i = Number(r.dataset.i), m = serie[i];
+      tip.innerHTML = '<b>'+m.rotulo+'</b><br>'+fmtBR(m.valor)+'<br>'+m.pedidos+(m.pedidos===1?' pedido':' pedidos');
+      tip.style.left = (pts[i][0]/W*100)+'%';
+      tip.style.top = (pts[i][1]/H*100)+'%';
+      tip.classList.add('on');
+      cx.setAttribute('x1', pts[i][0]); cx.setAttribute('x2', pts[i][0]); cx.setAttribute('opacity','1');
+    });
+  });
+  wrap.addEventListener('mouseleave', () => { tip.classList.remove('on'); cx.setAttribute('opacity','0'); });
+}
+
+function renderPicos(serie){
+  const alvo = $('rank-vendas');
+  if(!alvo) return;
+  const comVenda = serie.filter(m => m.pedidos > 0);
+  if(!comVenda.length){
+    alvo.innerHTML = '<div class="chart-empty" style="padding:24px 0">Sem pedidos nos últimos 12 meses.</div>';
+    return;
+  }
+  const melhor = comVenda.reduce((a,m)=> m.valor > a.valor ? m : a);
+  const pior = comVenda.reduce((a,m)=> m.valor < a.valor ? m : a);
+  const bloco = (titulo, m) =>
+    '<div class="rank-h">'+titulo+'</div><div class="rank-m">'+m.rotulo+'</div>'
+    + '<div class="rank-row"><span>Pedidos</span><b>'+m.pedidos+'</b></div>'
+    + '<div class="rank-row"><span>Valor vendido</span><b>'+fmtBR(m.valor)+'</b></div>'
+    + '<div class="rank-row"><span>Ticket médio</span><b>'+fmtBR(m.pedidos ? m.valor/m.pedidos : 0)+'</b></div>'
+    + '<div class="rank-row"><span>Farmácias</span><b>'+m.clientes+'</b></div>';
+  alvo.innerHTML = bloco('Melhor mês', melhor)
+    + (melhor.chave === pior.chave ? '' : '<div class="rank-sep"></div>' + bloco('Menor mês com venda', pior));
 }
 
 /* ============ TABELA PRODUTOS ============ */
