@@ -593,6 +593,13 @@ table.tbl{width:100%;border-collapse:collapse;font-size:12.5px;min-width:1100px}
         <div class="alert a-ok" id="cfg-email-ok" style="margin-top:14px"><span>✓ Email salvo!</span></div>
       </div>
       <div class="panel">
+        <h3>🏥 CNPJs liberados manualmente</h3>
+        <div class="desc">No cadastro, a loja consulta a Receita Federal e só aceita CNPJ com atividade principal de farmácia (CNAE 4771-7/01, 02 ou 03) e situação cadastral ativa. Os CNPJs listados aqui <b>pulam essa checagem</b>. Use para farmácia legítima barrada por CNAE divergente, ou nova demais para constar na base da Receita — que é atualizada mensalmente. Um por linha.</div>
+        <div class="fg"><label class="fl" for="cfg-cnpjs">CNPJs liberados</label><textarea class="fi" id="cfg-cnpjs" rows="5" style="resize:vertical;font-family:monospace;font-size:12.5px;line-height:1.7" placeholder="00.000.000/0000-00"></textarea></div>
+        <button class="btn btn-or" onclick="salvarCnpjsLiberados()">Salvar lista</button>
+        <div class="alert a-ok" id="cfg-cnpjs-ok" style="margin-top:14px"><span>✓ Lista salva!</span></div>
+      </div>
+      <div class="panel">
         <h3>🗑️ Resetar dados</h3>
         <div class="desc">Remove todas as customizações de produtos do navegador, voltando à carga inicial.</div>
         <div class="actions" style="justify-content:flex-start">
@@ -1676,6 +1683,25 @@ function alterarEmail(){
   setTimeout(()=>$('cfg-email-ok').classList.remove('on'), 2500);
 }
 
+/* ============ CNPJS LIBERADOS DA CHECAGEM DA RECEITA ============ */
+function salvarCnpjsLiberados(){
+  const bruto = ($('cfg-cnpjs').value||'').trim();
+  const digitos = [];
+  for(const item of bruto.split(/[\s,;]+/).filter(Boolean)){
+    const d = item.replace(/\D/g,'');
+    if(d.length !== 14) return alert('CNPJ inválido na lista: ' + item);
+    if(!digitos.includes(d)) digitos.push(d);
+  }
+  fetch('/api/config', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ chave: 'cnpjs_liberados', valor: digitos.join('\n') })
+  }).catch(err => console.warn('Erro ao salvar CNPJs liberados:', err));
+  $('cfg-cnpjs').value = digitos.map(fmtCnpjAdmin).join('\n');
+  $('cfg-cnpjs-ok').classList.add('on');
+  setTimeout(()=>$('cfg-cnpjs-ok').classList.remove('on'), 2500);
+}
+
 /* ============ PEDIDO MINIMO ============ */
 function alterarPedidoMinimo(){
   const v = ($('cfg-pedido-min').value||'').trim();
@@ -2206,6 +2232,16 @@ async function refreshAll(){
     }
   } catch(e){
     if($('cfg-pedido-min')) $('cfg-pedido-min').value = '';
+  }
+  try {
+    const resp3 = await fetch('/api/config?chave=cnpjs_liberados');
+    if(resp3.ok){
+      const data3 = await resp3.json();
+      const lista = String(data3 && data3.valor ? data3.valor : '').split(/[\s,;]+/).filter(Boolean);
+      if($('cfg-cnpjs')) $('cfg-cnpjs').value = lista.map(fmtCnpjAdmin).join('\n');
+    }
+  } catch(e){
+    if($('cfg-cnpjs')) $('cfg-cnpjs').value = '';
   }
 }
 
